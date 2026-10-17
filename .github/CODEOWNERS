@@ -1,0 +1,12 @@
+# O Tech Lead garante arquitetura e contratos. O Dev Backend entra como co-owner nas docs para desbloquear os PRs abertos pelo próprio Tech Lead.
+/docs/adr/                     @TECH_LEAD @DEV_BACKEND
+/docs/api/                     @TECH_LEAD @DEV_BACKEND
+/docs/definition-of-done.md    @TECH_LEAD @PO
+
+# Regras de CI e segurança de GCP/Firebase
+/.github/                      @TECH_LEAD
+/firestore.rules               @TECH_LEAD
+
+# Propriedades de código
+/backend/                      @DEV_BACKEND @TECH_LEAD
+/frontend/                     @DEV_FRONTEND

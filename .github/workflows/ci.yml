@@ -1,0 +1,59 @@
+name: CI CarbonLedger
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  secrets-scan:
+    name: Escanear Segredos
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+      - name: Gitleaks (TODO)
+        run: |
+          echo "TODO: Configurar Gitleaks ou TruffleHog para impedir chaves hardcoded"
+
+  openapi-lint:
+    name: Validar OpenAPI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+      - name: Lint com Redocly
+        run: |
+          npx @redocly/cli lint docs/api/openapi.yaml
+
+  lint:
+    name: Lint e Tipagem (Python)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Lint estático (TODO)
+        run: |
+          echo "TODO: Rodar flake8, ruff ou mypy para garantir que não há float/double"
+
+  test:
+    name: Testes Automatizados
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Setup Docker Compose
+        run: |
+          echo "TODO: docker compose up -d (iniciar emuladores do Auth e Firestore)"
+      - name: Run Tests (TODO)
+        run: |
+          echo "TODO: Rodar pytest (unitários e de contrato)"
