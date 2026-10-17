@@ -1,180 +1,200 @@
-# Documento de Visão do Produto: CarbonTrace
+# Visão do Produto e Projeto: CarbonTrace
 
 AI Lab Makers · Maker Foundation · G5
 
-## 1. Resumo do projeto
+## 1 CENÁRIO ATUAL DO CLIENTE E DO NEGÓCIO
 
-A CarbonTrace é uma plataforma web desenvolvida no AI Lab Makers para redes de varejo e franquias fecharem, todo mês, o inventário de emissões de gases de efeito estufa (Escopos 1 e 2) de diversas unidades buscando maximizar a confiabilidade dos dados, de modo que cada número publicado possa ser explicado, refeito e verificado por um auditor.
+### 1.1 Introdução ao Negócio e Contexto
 
-Nossa tese é que o problema não está somente em calcular carbono. O problema é **o nível de confiança do número consolidado**: dados de ponta digitados sem controle, fatores trocados sem registro, correções que sobrescrevem o histórico e totais que não fecham com a soma das unidades. Por isso a CarbonTrace surge como um **livro-razão de emissões**, no qual dados e fatores são imutáveis, correções viram revisões com autor e motivo, e todo resultado possui um recibo de cálculo reproduzível.
+A CarbonTrace é uma proposta de plataforma web para redes de varejo e franquias registrarem consumos mensais por unidade, calcularem emissões de gases de efeito estufa e consolidarem o inventário da rede. O MVP cobre Escopos 1 e 2. O projeto é desenvolvido pelo Grupo 05 no AI Lab Makers, no ciclo Maker Foundation.
 
-**Posicionamento.** Para gerentes de ESG e analistas de controladoria de redes de varejo e franquias, que precisam consolidar e defender o inventário de muitas unidades, a CarbonTrace é uma plataforma de inventário que torna cada número rastreável e reproduzível. Diferente de planilhas e das plataformas encontradas no mercado atualmente, nós versionamos de forma imutável dados, fatores e metodologia, permitindo recalcular qualquer período passado com o fator da época e obter exatamente o mesmo resultado.
+O segmento inicial compreende redes com 20 a 300 unidades, com equipe de ESG ou controladoria na matriz e responsáveis pela coleta nas lojas. Supermercados, atacarejos regionais, farmácias, redes de alimentação e lojas de conveniência são setores a investigar. Esse recorte define o público pretendido; a capacidade para atender 300 unidades ainda depende de testes.
 
-**Abstração básica do projeto:**
+O processo considerado começa com o registro de eletricidade, combustíveis e refrigerantes na unidade. A matriz revisa os dados, calcula as emissões e publica o fechamento mensal. Quando um valor precisa ser corrigido, a equipe deve conseguir consultar tanto a revisão atual quanto o número publicado anteriormente. Ainda não há, nos materiais do projeto, um cliente contratado ou resultados de entrevistas que comprovem a frequência desses problemas.
 
-- Complexidade: baixa na interface, mais concentrada no motor de cálculo.
-- MVP: cinco jornadas, emissões de Escopo 1 e Escopo 2.
-- Base técnica: GCP e Firebase (Auth e Firestore), API em Cloud Run, frontend em Firebase Hosting.
-- Custo estimado de nuvem do MVP: aproximadamente US$ 8 (temos como orçamento US$ 50).
+### 1.2 Identificação da Oportunidade ou Problema
 
-## 2. O problema
+O problema investigado é a dificuldade de conferir a origem e reproduzir o cálculo dos números de um inventário consolidado a partir de planilhas de várias unidades. A documentação inicial identifica seis hipóteses para validação com responsáveis pela coleta e pelo fechamento:
 
-Aualmente, o inventário em grandes redes funciona de forma a acumular erros entre as partes, o gerente lança, por exemplo, o consumo mensal de luz e combustível numa planilha e manda para a matriz, porém, na hora de juntar dezenas de arquivos de diferentes origens, a rastreabilidade do dado é severamente comprometida.
+1. Valores são registrados em unidades de medida diferentes, como kWh e MWh, sem conversão controlada.
+2. Fatores de emissão são substituídos sem preservar a versão usada no fechamento anterior.
+3. Correções sobrescrevem o dado original e não registram autor, data e motivo.
+4. A soma das unidades diverge do total da rede por cópia manual ou arredondamento em etapas diferentes.
+5. Os registros não identificam separadamente quem informou e quem aprovou os dados.
+6. A resposta a uma solicitação de auditoria depende de localizar arquivos e reconstruir cálculos manualmente.
 
-**Falhas recorrentes (hipóteses a validar nas entrevistas)**
+A oportunidade consiste em reunir coleta, revisão, cálculo e fechamento em um fluxo com referências persistentes entre o dado informado e o resultado publicado. A redução de retrabalho deverá ser medida em um piloto; não há uma linha de base que permita estimar economia de horas ou de custos neste momento.
 
-1. Erros de unidade e de digitação na entrada, como kWh por MWh.
-2. Fatores desatualizados ou trocados sem registro, o que altera resultados passados.
-3. Correções que sobrescrevem o valor original, sem autor, data ou motivo.
-4. Agregados que não fecham com a soma das unidades, por arredondamento e cópia manual.
-5. Nenhum responsável pelo dado: ninguém sabe quem informou ou aprovou cada número.
-6. Auditoria reativa: responder “de onde veio este número?” é geralmente burocrático e moroso.
+A Figura 1 organiza as causas propostas nas categorias de método, máquina, mão de obra, materiais, medida e meio ambiente. O diagrama representa somente hipóteses do projeto, não resultados de uma pesquisa concluída.
 
-**Consequências.** Retrabalho mensal da controladoria, risco de greenwashing (divulgar um número que não se sustenta), perda de credibilidade com clientes, bancos e franqueadora, e um inventário que não resiste a uma verificação de terceira parte.
+![Diagrama de Ishikawa: causas da baixa confiança no inventário consolidado](assets/Diagrama_Ishikawa.png)
 
-**Diagrama de Ishikawa (6M) - visão geral**
+*Figura 1. Diagrama de Ishikawa da CarbonTrace, organizado pelos 6M.*
 
-| Grupo | Causas |
-| --- | --- |
-| Método | Coleta sem padrão entre unidades; correções por sobrescrita; ausência de política de fechamento de período; metodologia de cálculo não documentada |
-| Máquina | Planilhas com fórmulas frágeis; conversão de unidades manual; fatores sem controle de versão; consolidação por copiar e colar |
-| Mão de obra | Gerentes de unidade sem formação em carbono; rotatividade na ponta; controladoria pequena e sobrecarregada |
-| Material | Fatores de fontes e anos diferentes; contas e notas em formatos variados; dados faltantes ou estimados sem rótulo |
-| Medida | Nenhuma checagem de plausibilidade contra o histórico; sem indicador de qualidade do dado; comparação entre unidades sem normalizar pelo tamanho |
-| Meio ambiente | Pressão crescente de clientes, bancos e franqueadoras por dados verificáveis; metodologias em evolução; prazos de divulgação apertados |
+### 1.3 Desafios do Projeto
 
-## 3. Público-alvo e personas - visão geral
+O desafio técnico principal é manter a reprodução dos cálculos após correções e novas publicações de fatores. Cada resultado deve registrar as revisões de entrada, a conversão de unidades, o fator, o GWP e a metodologia utilizados. Publicar uma versão nova não pode alterar resultados já fechados.
 
-**Segmentação inicial:** Redes de varejo e franquias com 20 a 300 unidades, que operam refrigeração, frota ou geradores próprios e cuja matriz tem equipe pequena de ESG ou controladoria, sem time dedicado a inventário. 
-Setores em observação: supermercados e atacarejos regionais, farmácias, redes de alimentação e lojas de conveniência.
+A consolidação exige aritmética decimal e uma regra única de arredondamento. O total deve ser calculado com valores não arredondados; eventuais diferenças entre a soma dos valores exibidos e o total exibido precisam ser identificadas. Correções retroativas devem atualizar uma nova revisão do consolidado sem duplicar lançamentos nem modificar a versão anterior.
 
-**Compra (hipótese).** O decisor tende a ser a diretoria financeira ou de sustentabilidade, influenciada por auditoria, consultoria e, em franquias, pela franqueadora. A disposição de pagar é desconhecida e faz parte das entrevistas.
+A operação depende de pessoas com responsabilidades distintas. O gerente da unidade precisa informar os dados sem conhecer os detalhes do cálculo de carbono. A controladoria precisa revisar pendências e aprovar os lançamentos. O backlog exige que o aprovador seja diferente do autor do lançamento, portanto o piloto precisa contar com pelo menos duas pessoas para completar esse fluxo.
 
-**Personas**
+O prazo termina em 05/12/2026 e o orçamento de nuvem tem teto de US$ 50. Para limitar o trabalho, o MVP usa entrada manual e não inclui OCR, integrações com concessionárias ou ERP. A seleção de fatores, suas condições de uso e a ficha metodológica precisam ser verificadas antes da homologação. O documento não comprova experiência prévia da equipe nas tecnologias escolhidas nem substitui os testes do motor de cálculo.
 
-- **Gerente de ESG da matriz (decisora e usuária principal).** Quer responder a clientes e bancos com números defendíveis. Sofre para reconciliar planilhas e teme a pergunta do auditor. Recebe consolidação confiável, fechamento de período e pacote de auditoria.
-- **Analista de controladoria (fechamento).** Quer fechar o mês e explicar variações. Sofre com versões trocadas por e-mail e totais que não batem. Recebe fluxo de revisão, recibos de cálculo e ponte de variação.
-- **Gerente ou franqueado da unidade (coleta).** Quer informar os dados em poucos minutos e voltar à operação. Não domina o tema e teme errar. Recebe formulário guiado, na unidade de medida certa, com validação imediata.
-- **Auditor ou verificador (leitura).** Quer verificar sem depender de explicações verbais. Hoje não consegue reconstruir o cálculo. Recebe acesso somente leitura, recibos, versões de fatores e hash de integridade.
+### 1.4 Segmentação de Clientes
 
-## 4. Alternativas atuais e a lacuna que exploramos
+A segmentação proposta prioriza redes que operam refrigeração, frota ou geradores próprios e concentram o fechamento em uma equipe pequena. A presença dessas fontes permite avaliar o cálculo de combustíveis e refrigerantes, além da eletricidade comprada.
 
-| Alternativa | Pontos fortes | Lacuna que a CarbonTrace ocupa |
-| --- | --- | --- |
-| Planilhas próprias da rede | Flexíveis e familiares | Sem imutabilidade, sem validação na entrada, consolidação manual |
-| Ferramenta de cálculo do Programa Brasileiro GHG Protocol | Autoridade metodológica, fatores brasileiros, atualização anual | É uma planilha: sem fluxo multiunidade, sem controle de quem informou e sem trilha de auditoria |
-| Consultorias de inventário | Expertise e apoio à verificação | Retrato anual, não rotina mensal; custo recorrente; dependência de e-mail e planilha |
-| Plataformas corporativas de carbono (por exemplo IBM Envizi, Watershed, Persefoni, Sweep, Greenly) | Cobertura ampla, incluindo Escopo 3, e integrações | Leitura nossa, a confirmar em análise competitiva: foco em médias e grandes empresas e em integrações; coleta em muitas unidades pequenas e reprodutibilidade verificável por terceiros não são o centro da proposta |
-
-**Onde nos posicionamos.** No espaço entre a planilha e o meio corporativo: leve o bastante para uma rede média adotar em semanas e rigoroso o bastante para atravessar uma verificação de terceira parte. Vale ressaltar que nosso escopo não é consultoria, certificação de inventário ou vender compensações.
-
-## 5. A solução
-
-Seis princípios guiam o nosso produto e servem de critério de decisão se funcionalidades entrarem em conflito.
-
-1. **Reprodutível.** Mesmos dados, mesma versão de fatores e mesma versão de metodologia produzem sempre o mesmo resultado.
-2. **Imutável com revisões.** Nada é sobrescrito. Uma correção cria uma nova revisão, com autor, data e motivo.
-3. **Explicável.** Todo número tem um recibo de cálculo e um caminho de consulta até o dado de origem.
-4. **Preciso.** Aritmética robusta, unidades canônicas e arredondamento apenas na apresentação.
-5. **Isolado.** Os dados de cada cliente (tenant) e de cada unidade são protegidos por desenho, com autorização em todas as rotas.
-
-## 6. Diferenciais
-
-**D1. Fatores versionados e imutáveis.** Cada versão de um conjunto de fatores registra fonte, data de publicação, vigência, valores gás a gás (CO2 fóssil, CO2 biogênico, CH4 e N2O) e a versão do GWP (AR5 ou AR6). Uma versão publicada nunca é editada: corrige-se publicando outra que a substitui, com motivo registrado.
-
-**D2. Fechamento de período e correções retroativas.** Um período passa por quatro estados: aberto, em revisão, fechado e reaberto. Cada lançamento guarda duas datas, o mês de competência e o momento do registro. Assim o sistema responde tanto “qual é o número correto de março?” quanto “o que reportamos de março em 30 de abril?”.
-
-**D3. Ponte de variação.** Quando um total muda entre revisões, o produto decompõe a diferença em efeito de dados corrigidos, efeito de troca de fator e efeito de metodologia. É a resposta direta à pergunta que mais dói numa auditoria: por que o número mudou?
-
-**D4. Recibo de cálculo e pacote do auditor.** Cada resultado traz seu recibo: entradas, conversões, versão do fator, fórmula, resultado e hash SHA-256 das entradas. O relatório PDF e CSV exibe o hash do pacote, e quem recebe o arquivo consegue conferir sua integridade.
-
-**D5. Coleta guiada com validação que entende o contexto.** O formulário por unidade usa a unidade de medida correta de cada fonte e compara o valor com o histórico da própria unidade: um desvio acima de 3,5 no escore z modificado (baseado em mediana e MAD) exige justificativa. Cada dado recebe um rótulo de qualidade (medido, estimado ou padrão), informação que o auditor pergunta e a planilha não registra.
-
-**D6. Comparação justa entre unidades.** Ranking e outliers usam intensidade de emissão (por exemplo, kgCO2e por m² de área de venda) e a mediana da rede, para não punir lojas grandes só por serem grandes.
-
-**D7. Feito para rede e franquias.** Cada unidade tem um vínculo (própria ou franqueada) e o cliente registra a abordagem de consolidação do GHG Protocol (controle operacional, controle financeiro ou participação societária). O MVP não calcula Escopo 3 de cadeia de valor, mas, conforme a abordagem escolhida, as emissões de Escopo 1 e 2 das franqueadas entram no inventário da franqueadora como Escopo 3, categoria 14 (franquias). O modelo de dados já nasce preparado para isso; no MVP, vínculo e abordagem servem para rotular e filtrar a consolidação.
-
-## 7. Sobre o escopo do projeto
-
-**Fontes de emissão cobertas.** Eletricidade comprada (Escopo 2, abordagem por localização), combustíveis de frota própria, combustíveis estacionários (geradores, GLP e gás natural) e gases refrigerantes (emissões fugitivas). Os refrigerantes entram desde o início porque, em varejo com refrigeração, são uma fonte relevante de Escopo 1 e porque os GWPs desses gases variam entre as versões do IPCC.
-
-**Backlog do projeto - visão geral**
-
-1. **Cadastrar unidades e fontes de emissão** (gestora de ESG). Cada unidade tem código, nome, vínculo, área em m² e fontes ativas. Aceite: cadastrar uma unidade com 3 fontes em até 3 minutos; código duplicado é rejeitado com erro 409; usuário de outra empresa recebe 403 ou 404 ao acessar a unidade.
-2. **Registrar dados mensais com validação** (operador da unidade). Aceite: registrar 4 fontes em até 5 minutos; valor negativo ou unidade incompatível é rejeitado antes de salvar; em um conjunto de teste com 20 erros de unidade injetados, ao menos 19 (95%) são sinalizados; toda gravação registra autor, data e hora.
-3. **Calcular emissões com fatores versionados** (sistema). Aceite: 100 execuções com as mesmas entradas e a mesma versão de fatores produzem resultado idêntico (diferença zero); todo resultado referencia a versão do fator, a versão da metodologia e o hash das entradas; cálculo de uma unidade em até 1,5 s (p95); 10 casos de referência conferidos com a ferramenta do Programa Brasileiro GHG Protocol dentro da tolerância definida na ficha metodológica (proposta: 0,1%).
-4. **Consolidar dashboard, ranking e outliers** (gestora de ESG e controladoria). Aceite: a soma das unidades é igual ao total da rede em 100% dos testes, incluindo 1.000 casos aleatórios; dashboard com 100 unidades carrega em até 800 ms (p95); cada outlier (escore z modificado acima de 3,5 sobre a intensidade) mostra o motivo do alerta.
-5. **Gerar relatório PDF e CSV com trilha de auditoria** (controladoria e auditor). Aceite: relatório de um período fechado gerado em até 10 s; 100% dos números do relatório levam a um recibo de cálculo; o hash exibido no PDF confere com o do CSV baixado; o relatório lista as versões de fatores e de metodologia usadas.
-
-**Priorização MoSCoW**
-
-- **Must:** as cinco jornadas em versão básica; fatores versionados (D1); revisões e fechamento de período (D2); recibo de cálculo (D4); validação básica na entrada (D5); isolamento por tenant.
-- **Should:** ponte de variação (D3); ranking por intensidade e outliers (D6); rótulo de qualidade do dado; importação de unidades por CSV.
-- **Could:** perfil de auditor com acesso temporário somente leitura; vínculo e abordagem de consolidação com rótulo de categoria 14 (D7); escolha de AR5 ou AR6 por período.
-- **Won't (neste MVP):** Escopo 3 de cadeia de valor, OCR de faturas, integração com concessionárias, certificação de terceira parte, créditos de carbono, Escopo 2 por escolha de compra, integrações com ERP, anexos de arquivos, aplicativo nativo e benchmark entre clientes.
-
-## 8. Métricas de sucesso
-
-| Dimensão | Métrica | Meta | Quando |
+| Perfil | Atividade no processo | Necessidade atendida | Limite no MVP |
 | --- | --- | --- | --- |
-| Confiança | Reprodutibilidade de períodos fechados | 100% | Demo Day |
-| Consistência | Soma das unidades igual ao total da rede | Diferença zero em 100% das execuções | Checkpoint 2 |
-| Coleta | Erros de unidade sinalizados na entrada | ≥ 95% do conjunto de teste | Checkpoint 2 |
-| Usabilidade | Tempo de coleta de uma unidade com 4 fontes | ≤ 5 minutos, medido com 3 pessoas | Checkpoint 3 |
-| Auditoria | Tempo para rastrear um número até a origem | ≤ 60 segundos e 3 cliques | Demo Day |
-| Desempenho | p95 de leitura e de escrita | ≤ 800 ms e ≤ 1,5 s | Checkpoint 4 |
-| Qualidade | Cobertura, vulnerabilidades e Lighthouse | ≥ 80% no domínio e ≥ 60% global; zero crítica ou alta sem exceção; Lighthouse ≥ 90 | Checkpoint 4 |
-| Segurança | Autorização nas rotas e teste de isolamento | 100% das rotas; teste verde | Checkpoint 2 |
-| Custo | Gasto acumulado de nuvem | ≤ US$ 5 (CP2), ≤ US$ 12 (CP3), teto de US$ 50 | CP2, CP3 e CP4 |
+| Gerente de ESG da matriz | Define unidades, fontes e fatores; acompanha o inventário | Consultar consolidados e autorizar reaberturas com motivo registrado | Não recebe certificação do inventário nem cálculo de Escopo 3 |
+| Analista de controladoria | Revisa lançamentos, aprova dados e fecha a competência | Conferir pendências, consultar recibos e exportar PDF e CSV | A decomposição automática da variação entre revisões é Should |
+| Gerente ou franqueado da unidade | Informa os dados mensais das fontes ativas | Usar um formulário com validação de valor e unidade de medida | Acesso restrito à unidade autorizada; coleta manual |
+| Auditor ou verificador | Examina os resultados publicados | Conferir arquivos exportados, versões e recibos de cálculo | Acesso temporário dentro da plataforma é Could |
 
-## 9. Riscos e mitigações
+A hipótese comercial é que a diretoria financeira ou de sustentabilidade participe da compra, com influência de auditoria, consultoria ou franqueadora. Decisor, orçamento disponível e disposição de pagar ainda precisam ser confirmados nas entrevistas.
 
-- **Valor de mercado não validado.** Mitigação: duas entrevistas com pessoas do setor.
-- **Fatores incorretos ou com termos de uso restritivos.** Mitigação: registrar fonte e data de cada fator, revisão por duas pessoas, conferência cruzada com a ferramenta do Programa Brasileiro GHG Protocol e com os dados do MCTI, e checagem dos termos de uso antes de redistribuir.
-- **Erro numérico de unidade, precisão ou arredondamento.** Mitigação: aritmética decimal, testes de propriedade e casos de referência.
-- **Complexidade de revisões e fechamento de período.** Mitigação: modelo mínimo de quatro estados registrado em ADR.
-- **Custo de leitura no Firestore.** Mitigação: agregados pré-computados, paginação, limites e alertas; plano de contenção em US$ 40 (reduzir instâncias e pausar o Scheduler).
-- **Uso indevido do número (greenwashing).** Mitigação: relatórios com versões, rótulos de qualidade e nota metodológica; o produto não certifica inventários nem faz alegações de neutralidade.
-- **Estouro de escopo.** Mitigação: lista Won't explícita, MoSCoW revisado semanalmente e gates dos checkpoints.
-- **Mudança metodológica externa.** Mitigação: versionamento de metodologia previsto desde o desenho.
+## 2 SOLUÇÃO PROPOSTA
 
-## 10. LGPD e privacidade
+### 2.1 Objetivos do Produto
 
-A CarbonTrace guarda nome completo, e-mail corporativo e cargo ou papel de cada usuário apenas para autenticação, controle de acesso e trilha de auditoria, durante a vigência do contrato do cliente e por até 90 dias depois, quando os dados de identificação são eliminados ou anonimizados.
+O objetivo é permitir o fechamento mensal de um inventário de Escopos 1 e 2 em que cada resultado possa ser relacionado às entradas e recalculado com as versões utilizadas na publicação. O produto deve identificar pendências antes do fechamento, preservar correções como revisões e manter a soma das unidades consistente com o consolidado.
 
-- **Dados pessoais tratados:** nome completo, e-mail corporativo, cargo ou papel e vínculo com unidade. Não coletamos CPF, telefone, endereço pessoal nem localização, e os logs de aplicação não contêm dados pessoais.
-- **Finalidade e base legal (proposta, a validar com orientação jurídica):** execução de contrato e legítimo interesse em segurança e auditoria (LGPD, art. 7º, incisos V e IX). Papéis a confirmar: cliente como controlador e CarbonTrace como operador dos dados de usuários.
-- **Pseudonimização:** os eventos de auditoria guardam apenas um identificador opaco do usuário. A tabela que liga o identificador à pessoa fica separada e pode ser anonimizada a pedido do titular ou ao fim do contrato, sem quebrar a imutabilidade da trilha.
-- **Retenção:** dados de identificação durante o contrato e por até 90 dias após seu término, janela para o cliente exportar relatórios. Os dados de emissões pertencem ao cliente e são exportáveis em CSV.
-- **Segurança:** TLS em trânsito, criptografia em repouso gerenciada pelo Google Cloud, acesso por papéis e isolamento por tenant.
-- **Direitos do titular:** acesso, correção e eliminação ou anonimização, atendidos pelo administrador da conta do cliente com apoio da plataforma.
-- **MVP e demonstração:** somente dados sintéticos. As entrevistas são salvas sem nome, CPF ou telefone e com consentimento.
+As metas abaixo são critérios de validação previstos, não resultados alcançados. Os cenários e limites por história estão no [backlog MoSCoW](backlog/MoSCoW.md).
 
-## 11. Planejamento/calendário
+| Dimensão | Meta | Marco previsto |
+| --- | --- | --- |
+| Reprodutibilidade | Diferença zero em 100 recálculos com as mesmas entradas e versões | Demo Day |
+| Consistência | Soma exata das unidades igual ao total em 1.000 cenários de teste | Checkpoint 2 |
+| Validação da coleta | Sinalizar pelo menos 19 de 20 erros de unidade identificáveis na massa de teste | Checkpoint 2 |
+| Usabilidade | Cada um de 3 participantes registra 4 fontes em até 5 minutos | Checkpoint 3 |
+| Rastreabilidade | Consultar a origem de cada um de 10 resultados em até 60 segundos e 3 cliques | Demo Day |
+| Desempenho | p95 de leitura até 800 ms e de escrita até 1,5 s; cálculo de uma unidade com 4 fontes até 1,5 s no p95 | Checkpoint 4 |
+| Qualidade do código | Cobertura de pelo menos 80% no domínio e 60% global; nenhuma vulnerabilidade crítica ou alta sem exceção documentada | Checkpoint 4 |
+| Interface web | Lighthouse de pelo menos 90, com páginas e categorias de avaliação registradas no plano de testes | Checkpoint 4 |
+| Autorização | Cobrir 100% das rotas protegidas e aprovar os testes de isolamento por cliente e unidade | Checkpoint 2 |
+| Custo de nuvem | Acumulado até US$ 5 no CP2, US$ 12 no CP3 e US$ 50 no ciclo | Checkpoints 2 a 4 |
 
-- **Checkpoint 1, Fundação (18/10).** Este documento, Ishikawa, backlog MoSCoW com critérios mensuráveis, 2 entrevistas ou evidências secundárias rotuladas, hipótese de defensibilidade, ADRs, OpenAPI v0.1, Definition of Done, Docker Compose com API, frontend e emuladores, CI com lint e build, seed reproduzível, .env.example, alertas de orçamento e teste de isolamento de tenant escrito. Itens específicos do projeto: ficha metodológica e dataset de fatores v1.
-- **Checkpoint 2, Núcleo funcional (01/11).** 3 a 5 jornadas ponta a ponta rodando localmente, Security Rules deny-all com testes, EP/BVA v1, matriz de rastreabilidade e gasto de até US$ 5.
-- **Checkpoint 3, Nuvem e integração (15/11).** Deploy no Firebase Hosting e Cloud Run, health checks, logs JSON, Workload Identity Federation e gasto de até US$ 12.
-- **Checkpoint 4, Estabilização (29/11).** Pipeline bloqueante, cobertura e Lighthouse nas metas, rollback ensaiado e relatório de custos.
-- **Demo Day (05/12).** Homologação e apresentação.
+Para desempenho, o backlog propõe 100 operações após 10 de aquecimento, com 100 unidades cadastradas e 1 usuário simultâneo, em ambiente identificado. O resultado desse teste não comprova capacidade para 300 unidades com acessos concorrentes.
 
-## 12. Glossário
+### 2.2 Características da Solução
 
-- **tCO2e:** tonelada de CO2 equivalente, unidade que soma todos os gases ponderados pelo GWP.
-- **Escopo 1, 2 e 3:** emissões diretas (combustão própria e gases refrigerantes), emissões da eletricidade comprada e demais emissões indiretas da cadeia.
-- **Fator de emissão:** quanto de gás é emitido por unidade de atividade, por exemplo kg de CO2 por kWh.
-- **GWP:** potencial de aquecimento global, que converte cada gás em CO2 equivalente.
-- **Abordagem por localização:** método de Escopo 2 que usa o fator médio da rede elétrica onde a energia é consumida.
-- **Tenant:** cada empresa cliente do sistema. Os dados de uma nunca aparecem para outra.
-- **Revisão:** nova versão de um lançamento que corrige o anterior sem apagá-lo.
-- **Recibo de cálculo:** registro das entradas, da versão do fator, da fórmula, do resultado e do hash de um cálculo.
-- **Escore z modificado:** medida de desvio baseada em mediana e MAD, pouco sensível a valores extremos.
+**Fontes e limites do inventário**
 
-## 13. Referências
+O Escopo 1 inclui combustíveis de frota própria, combustíveis estacionários, como geradores, GLP e gás natural, e gases refrigerantes. O Escopo 2 inclui eletricidade comprada pela abordagem por localização. A ficha metodológica deverá definir os fatores, as conversões, o tratamento de CO2 biogênico e a versão de GWP usada em cada conjunto de cálculo.
 
-- GHG Protocol: Corporate Standard, Scope 2 Guidance (2015, em revisão) e Corporate Value Chain (Scope 3) Standard.
-- Programa Brasileiro GHG Protocol (FGV e WRI): ferramenta de cálculo e Registro Público de Emissões.
-- MCTI: fatores de emissão médios mensais do Sistema Interligado Nacional.
-- IPCC: relatórios de avaliação AR5 e AR6 (valores de GWP).
-- Lei 13.709/2018 (LGPD).
+As cinco jornadas obrigatórias são:
 
+| Jornada | Comportamento previsto | Histórias do backlog |
+| --- | --- | --- |
+| Cadastrar unidades e fontes | Registrar código, nome, vínculo própria ou franqueada, área e fontes ativas; rejeitar código duplicado no mesmo cliente | CT-M01 e CT-M02 |
+| Registrar dados mensais | Validar valor e unidade de medida; registrar competência, autor e instante; impedir que a mesma requisição gere lançamentos duplicados | CT-M03 |
+| Calcular emissões | Converter unidades e aplicar fatores e metodologia versionados, preservando as entradas de cada execução | CT-M04 e CT-M05 |
+| Consolidar o dashboard | Exibir totais por competência, unidade e escopo, identificar pendências e consultar a versão de fechamento selecionada | CT-M06, CT-M07 e CT-M08 |
+| Exportar PDF e CSV | Gerar arquivos de um período fechado com referências aos recibos, versões e verificação de integridade | CT-M09 e CT-M10 |
+
+**Versionamento, fechamento e auditoria**
+
+Fatores publicados e revisões de lançamentos não são editados. Uma correção cria uma versão com referência à anterior e motivo registrado. Os períodos têm quatro estados: aberto, em revisão, fechado e reaberto. O fechamento exige dados completos e aprovados; a reabertura depende do perfil ESG. Um novo fechamento preserva a consulta à publicação anterior.
+
+Cada recibo contém entradas, conversões, fórmula, resultado e versões de fator, GWP e metodologia. O hash SHA-256 permite comparar a integridade do conteúdo. Na exportação, o PDF informa o hash do CSV final, e um manifesto separado lista os hashes dos dois arquivos. O hash não comprova a veracidade do consumo informado e não equivale a uma certificação.
+
+**Priorização**
+
+O [backlog MoSCoW](backlog/MoSCoW.md) contém 27 histórias: 10 Must, 4 Should, 3 Could e 10 Won't. A implementação deve respeitar essa divisão:
+
+| Prioridade | Conteúdo |
+| --- | --- |
+| Must | Cinco jornadas básicas, autorização por cliente e unidade, fatores imutáveis, revisões, fechamento e recibos |
+| Should | Ponte de variação entre revisões, ranking por intensidade, outliers, qualidade e plausibilidade dos dados e importação de unidades por CSV |
+| Could | Acesso temporário do auditor, filtros por vínculo e abordagem de consolidação, escolha de AR5 ou AR6 por período |
+| Won't | Cálculo de Escopo 3, OCR de faturas, integração com concessionárias, certificação de terceira parte, créditos de carbono, Escopo 2 baseado em mercado, integração com ERP, anexos de documentos, aplicativo nativo e benchmark entre clientes |
+
+O cadastro do vínculo própria ou franqueada é Must; os filtros e o registro da abordagem de consolidação são Could. Uma indicação de possível categoria 14 será apenas informativa, caso CT-C02 seja entregue. O MVP não calcula emissões de Escopo 3.
+
+Se CT-S02 for entregue, as comparações usarão kgCO2e por m², mediana da rede e escore z modificado com limiar absoluto maior que 3,5. CT-S03 acrescentará rótulos de qualidade e justificativas de desvios históricos. Os tratamentos para área inválida, histórico insuficiente e MAD zero estão especificados no backlog. Esses recursos não são condição para concluir as cinco jornadas básicas.
+
+**Dados pessoais e operação do piloto**
+
+A proposta limita os dados pessoais a nome, e-mail corporativo, papel e vínculo com unidade. Os eventos de auditoria devem usar um identificador opaco, com a correspondência para a pessoa mantida separadamente. Logs de aplicação não devem conter dados pessoais.
+
+A política proposta prevê retenção dos dados de identificação durante o contrato e por até 90 dias após seu término, seguida de eliminação ou anonimização. Papéis contratuais, bases legais e procedimentos para solicitações de titulares dependem de validação jurídica antes de uso com dados reais. A demonstração utiliza somente dados sintéticos; eventuais registros de entrevistas devem ter consentimento e não conter nome, CPF ou telefone. Essas são condições planejadas, não uma declaração de conformidade já verificada.
+
+### 2.3 Tecnologias a Serem Utilizadas
+
+| Componente | Tecnologia prevista | Uso no projeto |
+| --- | --- | --- |
+| Autenticação | Firebase Authentication | Identificar usuários antes de autorizar operações |
+| Persistência | Cloud Firestore | Armazenar unidades, lançamentos, versões, recibos e consolidados com separação por cliente |
+| API | Cloud Run, no Google Cloud | Executar validações, cálculos, fechamento e exportações |
+| Aplicação web | Firebase Hosting | Publicar a interface de coleta, revisão e consulta |
+| Ambiente local | Docker Compose e emuladores Firebase | Reproduzir API, frontend e serviços de desenvolvimento com dados sintéticos |
+| Contrato da API | OpenAPI | Documentar operações, entradas, respostas e erros |
+| Entrega e acesso à nuvem | CI e Workload Identity Federation | Executar verificações e autenticar o processo de implantação |
+
+A linguagem da API, o framework do frontend, as bibliotecas de cálculo decimal e de PDF e o provedor de CI ainda precisam ser definidos em registros de decisão de arquitetura (ADRs). A escolha deve considerar precisão decimal, execução nos serviços previstos e capacidade de manutenção pela equipe.
+
+O acesso deve ser autorizado na API e nas regras do Firestore, com negação por padrão e permissões explícitas. A proposta inclui TLS em trânsito, criptografia em repouso gerenciada pelo provedor e testes de acesso entre clientes e unidades. Consultas paginadas e consolidados pré-calculados devem limitar leituras repetidas; a atualização desses consolidados precisa preservar a revisão do fechamento e tolerar reprocessamento sem duplicação.
+
+### 2.4 Pesquisa de Mercado e Análise Competitiva
+
+A pesquisa de mercado ainda é preliminar. Os materiais disponíveis identificam alternativas, mas não registram entrevistas concluídas, preços coletados ou testes comparativos. A tabela define o que deverá ser verificado; não atribui limitações a fornecedores sem evidência.
+
+| Alternativa a investigar | Questões da comparação | Evidência a registrar |
+| --- | --- | --- |
+| Planilhas usadas pelas redes | Como são controladas versões, aprovações, conversões e correções? | Exemplo anonimizado do fluxo e tempo gasto no fechamento |
+| Ferramenta do Programa Brasileiro GHG Protocol | Quais cálculos e fatores podem servir de referência para o recorte adotado? | Versão utilizada, premissas e 10 casos de cálculo comparáveis |
+| Consultorias de inventário | Como organizam a coleta mensal e a entrega de evidências ao cliente? | Descrição do serviço, frequência e proposta comercial quando disponível |
+| Plataformas corporativas, como IBM Envizi, Watershed, Persefoni, Sweep e Greenly | Como tratam coleta por unidade, revisões, reprodução de fechamentos e exportação de evidências? | Documentação oficial ou demonstração, com data e limitações observadas |
+
+A hipótese de diferenciação da CarbonTrace é oferecer um fluxo restrito a Escopos 1 e 2 que associe coleta por unidade, fechamento mensal e reprodução de versões anteriores. A hipótese será avaliada com pelo menos duas entrevistas com profissionais do segmento. Devem ser registrados o processo atual, os erros encontrados, o esforço para rastrear um número, os responsáveis pela compra e a disposição de testar a solução. Se forem usadas evidências secundárias no Checkpoint 1, elas precisam ser identificadas como tal, sem serem apresentadas como entrevistas.
+
+### 2.5 Análise de Viabilidade
+
+**Viabilidade técnica**
+
+O MVP dispensa integrações externas de coleta e concentra o trabalho em formulários, autorização, cálculo e versionamento. Isso reduz dependências de concessionárias e ERPs, mas não elimina a necessidade de validar fatores e regras de cálculo. A viabilidade será demonstrada por jornadas completas, testes de isolamento e comparação com casos de referência.
+
+A homologação prevê 10 casos de referência com tolerância proposta de 0,1%, a confirmar na ficha metodológica, e resultado exatamente zero quando a referência for zero. A reprodução de uma mesma versão deve ter diferença zero, independentemente dessa tolerância de comparação externa. A revisão dos fatores por duas pessoas e a conferência das condições de redistribuição são necessárias antes de publicar o conjunto de fatores.
+
+**Prazo e entregas**
+
+| Marco | Data em 2026 | Entrega prevista |
+| --- | --- | --- |
+| Checkpoint 1 | 18/10 | Visão, Ishikawa, backlog com aceite mensurável, 2 entrevistas ou evidências secundárias identificadas, hipótese de diferenciação, ADRs, OpenAPI v0.1, Definition of Done, ambiente local, CI com lint e build, dados de teste reproduzíveis, `.env.example`, alertas de orçamento, teste de isolamento escrito, ficha metodológica e fatores v1 |
+| Checkpoint 2 | 01/11 | De 3 a 5 jornadas completas no ambiente local, regras do Firestore com negação por padrão e testes, testes de partição de equivalência e valores-limite, matriz de rastreabilidade e custo acumulado até US$ 5 |
+| Checkpoint 3 | 15/11 | Implantação no Firebase Hosting e Cloud Run, verificações de disponibilidade, logs JSON, Workload Identity Federation e custo acumulado até US$ 12 |
+| Checkpoint 4 | 29/11 | Verificações de CI que bloqueiem entregas reprovadas, cobertura e Lighthouse nas metas, reversão de implantação ensaiada e relatório de custos |
+| Demo Day | 05/12 | Homologação das cinco jornadas obrigatórias e apresentação das evidências |
+
+Should e Could só devem ser assumidos após avaliar a capacidade restante. A comparação de unidades com a mediana, prevista na ideia inicial da demonstração, depende da entrega de CT-S02. O recálculo de um período com o fator original permanece obrigatório.
+
+**Viabilidade financeira**
+
+A estimativa inicial de infraestrutura registrada no projeto é de aproximadamente US$ 8, com teto de US$ 50 para o ciclo. Esse valor ainda não foi acompanhado de uma memória de cálculo por serviço e volume de uso. Não deve ser tratado como cotação vigente, custo de produção ou custo total do projeto: trabalho da equipe, suporte e eventual validação especializada não estão quantificados.
+
+O acompanhamento deve usar os gastos acumulados dos serviços e os limites de cada checkpoint. Ao atingir US$ 40, a equipe deverá revisar instâncias e rotinas agendadas, quando existentes, para conter o consumo antes do teto. Consultas e exportações precisam ser observadas nos testes para identificar leituras excessivas no Firestore.
+
+**Viabilidade de mercado e riscos**
+
+A viabilidade comercial depende de confirmar a frequência do problema e o interesse em adotar a coleta proposta. Ainda não há base para estimar receita, retorno financeiro ou prazo de aquisição de clientes.
+
+| Risco | Tratamento previsto |
+| --- | --- |
+| Problema pouco frequente ou sem orçamento para solução | Validar processo, esforço e decisão de compra em entrevistas |
+| Fator inadequado, desatualizado ou sem permissão de uso | Registrar fonte, publicação e vigência; revisar conteúdo e condições de uso antes da publicação |
+| Divergência de cálculo ou consolidação | Usar decimal, conversões explícitas, casos de referência e 1.000 cenários de consistência |
+| Perda de histórico em correções | Preservar revisões e testar consultas a fechamentos anteriores |
+| Acesso indevido entre clientes | Testar API e Firestore com clientes e unidades distintos |
+| Prazo ou orçamento excedido | Priorizar Must, revisar MoSCoW semanalmente e acompanhar limites de custo |
+| Relatório interpretado como certificação | Identificar metodologia e versões e informar no PDF que não constitui certificação de terceira parte |
+
+### 2.6 Impacto da Solução
+
+Para a unidade, o benefício esperado é concluir o registro de quatro fontes em até cinco minutos, com retorno imediato sobre campos ausentes, valores negativos e unidades incompatíveis. O teste com três participantes deverá verificar se o formulário atende essa meta sem assistência durante a execução.
+
+Para a controladoria, o resultado esperado é consultar pendências antes de fechar a competência e corrigir lançamentos sem perder a publicação anterior. A diferença zero entre soma das unidades e total da rede será verificada nos testes de consistência. Uma eventual redução do tempo total de fechamento só poderá ser calculada depois de medir o processo atual e compará-lo a um piloto equivalente.
+
+Para ESG e auditoria, o benefício esperado é localizar a origem de um resultado em até sessenta segundos e três cliques, além de reproduzir o cálculo com as mesmas versões. PDF, CSV e manifesto permitirão conferir os resultados publicados e detectar alterações nos arquivos. A qualidade do inventário continuará dependendo da qualidade dos dados informados e da adequação dos fatores escolhidos.
+
+A demonstração deverá mostrar uma correção preservando o fechamento anterior e cem recálculos com diferença zero usando as mesmas entradas e versões. Se o ranking por intensidade for entregue, também deverá mostrar a comparação de unidades com a mediana da própria rede. O projeto não promete redução de emissões, certificação, economia financeira ou conformidade jurídica comprovada apenas pela adoção da plataforma.
