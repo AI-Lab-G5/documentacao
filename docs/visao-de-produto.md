@@ -27,7 +27,7 @@ A oportunidade consiste em reunir coleta, revisão, cálculo e fechamento em um 
 
 A Figura 1 organiza as causas propostas nas categorias de método, máquina, mão de obra, materiais, medida e meio ambiente. O diagrama representa somente hipóteses do projeto, não resultados de uma pesquisa concluída.
 
-![Diagrama de Ishikawa: causas da baixa confiança no inventário consolidado](assets/Diagrama_Ishikawa.png)
+![Diagrama de Ishikawa: causas da baixa confiança no inventário consolidado](/assets/Diagrama_Ishikawa.png)
 
 *Figura 1. Diagrama de Ishikawa da CarbonTrace, organizado pelos 6M.*
 
