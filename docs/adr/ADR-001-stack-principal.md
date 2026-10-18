@@ -4,7 +4,7 @@
 Proposto (16/10/2026) - Autor: Tech Lead (Grupo 05)
 
 ## Contexto
-O projeto CarbonLedger (ciclo de 9 semanas, orçamento de US$ 3–8) requer uma API que calcule emissões com precisão absoluta, proibindo o uso de ponto flutuante. A linguagem da API deve suportar decimais exatos nativamente. Além disso, precisamos definir a infraestrutura de alojamento (GCP), o frontend e o ambiente de CI/CD para uma equipa de estudantes.
+O projeto CarbonTrace (ciclo de 9 semanas, orçamento de US$ 3–8) requer uma API que calcule emissões com precisão absoluta, proibindo o uso de ponto flutuante. A linguagem da API deve suportar decimais exatos nativamente. Além disso, precisamos definir a infraestrutura de alojamento (GCP), o frontend e o ambiente de CI/CD para uma equipa de estudantes.
 
 ## Decisão
 Vamos usar **Python (FastAPI)** como linguagem da API. A biblioteca padrão `decimal` garante o cumprimento do requisito de precisão exata. A API será alojada no **GCP Cloud Run**, e o frontend (React) no **Firebase Hosting**. O ambiente local usará **Docker Compose** integrando os emuladores locais do Firebase (Auth e Firestore). No GitHub Actions (CI), correremos validações de *lint*, testes unitários/integração e *build* da imagem a cada Pull Request.

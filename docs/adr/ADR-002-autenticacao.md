@@ -4,7 +4,7 @@
 Proposto (16/10/2026) - Autor: Tech Lead (Grupo 05)
 
 ## Contexto
-O CarbonLedger é uma aplicação *multi-tenant* focada em empresas B2B. O sistema não permite registo público; os utilizadores são convidados. Para efeitos de auditoria e RGPD/LGPD, são guardados dados mínimos (nome, e-mail corporativo, cargo). O isolamento dos dados entre os clientes (*tenants*) é o pilar da segurança da plataforma. O orçamento estrito (US$ 3–8) inviabiliza soluções empresariais dispendiosas.
+O CarbonTrace é uma aplicação *multi-tenant* focada em empresas B2B. O sistema não permite registo público; os utilizadores são convidados. Para efeitos de auditoria e RGPD/LGPD, são guardados dados mínimos (nome, e-mail corporativo, cargo). O isolamento dos dados entre os clientes (*tenants*) é o pilar da segurança da plataforma. O orçamento estrito (US$ 3–8) inviabiliza soluções empresariais dispendiosas.
 
 ## Decisão
 Vamos usar o **Firebase Authentication** padrão (modo *single project*) gerindo o *multi-tenancy* através de **Custom Claims**. O token JWT de cada utilizador conterá o `tenantId` e o `role` (papel). A API validará o token em cada pedido e extrairá o `tenantId` exclusivamente deste token, nunca do corpo ou via de acesso (*path*).

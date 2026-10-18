@@ -1,4 +1,4 @@
-# Definition of Done (DoD) - CarbonLedger
+# Definition of Done (DoD) - CarbonTrace
 
 Esta lista define as condições obrigatórias para que qualquer tarefa, história ou Pull Request (PR) seja considerada concluída e pronta para mesclar na *branch* principal.
 

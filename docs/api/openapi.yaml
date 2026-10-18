@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
-  title: CarbonLedger API
+  title: CarbonTrace API
   version: 0.1.0
   description: |
-    API para o sistema CarbonLedger (Pegada Rede).
+    API para o sistema CarbonTrace (Pegada Rede).
     O tenant é sempre inferido a partir do token de autenticação (tenantId). Nenhum tenantId deve ser enviado na via (path), query ou corpo (body).
     Valores exatos (quantidades, fatores, emissões) são sempre trafegados como string decimal canónica.
 servers:
@@ -735,7 +735,7 @@ components:
             erro_validacao:
               summary: Erro 422 de validação
               value:
-                type: "https://api.carbonledger.com/errors/validation"
+                type: "https://api.carbontrace.com/errors/validation"
                 title: "Unprocessable Entity"
                 status: 422
                 detail: "A requisição contém parâmetros inválidos."

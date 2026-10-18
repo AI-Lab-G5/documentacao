@@ -1,4 +1,4 @@
-name: CI CarbonLedger
+name: CI CarbonTrace
 
 on:
   pull_request:
