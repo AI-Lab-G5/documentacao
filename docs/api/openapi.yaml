@@ -1,755 +1,2186 @@
 openapi: 3.1.0
 info:
-  title: CarbonTrace API
-  version: 0.1.0
-  description: |
-    API para o sistema CarbonTrace (Pegada Rede).
-    O tenant é sempre inferido a partir do token de autenticação (tenantId). Nenhum tenantId deve ser enviado na via (path), query ou corpo (body).
-    Valores exatos (quantidades, fatores, emissões) são sempre trafegados como string decimal canónica.
+  title: CarbonTrace API — contrato-alvo
+  version: 0.2.0
+  description: Comportamento planejado conforme ADR-008 (23/10/2026), não comprovação de implementação. Um perfil
+    funcionario acessa todas as unidades do próprio tenant. Claims tenant_id/papel, sem tenant selecionável pelo
+    cliente. Decimal em strings; sem quatro perfis, aprovação, fechamento, publicação de fatores pela API ou hashes
+    obrigatórios. J1–J4 no CP2, J5 obrigatória no MVP posterior.
 servers:
-  - url: /v1
+- url: /v1
+  description: Prefixo do contrato-alvo, distinto das rotas implementadas atuais.
 tags:
-  - name: Transversal
-    description: Operações gerais e de saúde do sistema
-  - name: J1
-    description: Cadastros de unidades e fontes
-  - name: J2
-    description: Registos de atividade mensal e aprovações
-  - name: J3
-    description: Fatores de emissão e cálculos
-  - name: J4
-    description: Dashboards e agregados da rede
-  - name: J5
-    description: Relatórios e trilha de auditoria
+- name: Transversal
+  description: Saúde e identidade
+- name: J1
+  description: Unidades e fontes
+- name: J2
+  description: Coleta, correção e cancelamento
+- name: J3
+  description: Fatores e snapshots reproduzíveis
+- name: J4
+  description: Consolidação, ranking e alertas
+- name: J5
+  description: PDF/CSV rastreável
+security:
+- bearerAuth: []
 paths:
   /health:
     get:
-      tags: [Transversal]
-      summary: Verificar saúde da API
-      description: Endpoint público para verificação de uptime.
+      tags:
+      - Transversal
       operationId: getHealth
-      security: []
+      summary: Verificar saúde
+      description: Verificar saúde. Contrato-alvo; consultar ADR-008.
       responses:
         '200':
-          description: API operacional
+          description: Operação concluída
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: ok
+                $ref: '#/components/schemas/Health'
+              example:
+                status: ok
+        '400':
+          description: Requisição HTTP malformada.
+      security: []
   /me:
     get:
-      tags: [Transversal]
-      summary: Obter perfil do utilizador
-      description: Retorna os dados, tenant e papel (role) do utilizador autenticado.
+      tags:
+      - Transversal
       operationId: getMe
-      x-roles: ["admin_esg", "analista_controladoria", "operador_unidade", "auditor"]
+      summary: Consultar identidade e empresa
+      description: Consultar identidade e empresa. Contrato-alvo; consultar ADR-008.
       responses:
         '200':
-          description: Perfil do utilizador
+          description: Operação concluída
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserProfile'
+              example:
+                uid: user-1
+                tenantId: empresa-a
+                role: funcionario
         '401':
-          $ref: '#/components/responses/Unauthorized'
-
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
   /facilities:
     get:
-      tags: [J1]
-      summary: Listar unidades
-      description: Lista as unidades (franquias/filiais) do tenant com paginação por cursor.
+      tags:
+      - J1
       operationId: listFacilities
-      x-roles: ["admin_esg", "analista_controladoria", "operador_unidade", "auditor"]
-      parameters:
-        - $ref: '#/components/parameters/LimitParam'
-        - $ref: '#/components/parameters/CursorParam'
+      summary: Listar unidades
+      description: Listar unidades. Contrato-alvo; consultar ADR-008.
       responses:
         '200':
-          description: Lista paginada de unidades
+          description: Operação concluída
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Facility'
-                  nextCursor:
-                    type: ["string", "null"]
+                $ref: '#/components/schemas/FacilityPage'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
+      parameters:
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Cursor'
     post:
-      tags: [J1]
-      summary: Criar unidade
-      description: Cadastra uma nova unidade.
+      tags:
+      - J1
       operationId: createFacility
-      x-roles: ["admin_esg"]
+      summary: Cadastrar unidade
+      description: Cadastrar unidade. Contrato-alvo; consultar ADR-008.
+      responses:
+        '201':
+          description: Operação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Facility'
+              example:
+                id: fac-1
+                code: LOJA-01
+                name: Loja Centro
+                isActive: true
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/FacilityCreate'
+            example:
+              code: LOJA-01
+              name: Loja Centro
+  /facilities/{facilityId}:
+    get:
+      tags:
+      - J1
+      operationId: getFacility
+      summary: Consultar unidade
+      description: Consultar unidade. Contrato-alvo; consultar ADR-008.
       responses:
-        '201':
-          description: Unidade criada
+        '200':
+          description: Operação concluída
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Facility'
+              example:
+                id: fac-1
+                code: LOJA-01
+                name: Loja Centro
+                isActive: true
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
         '422':
-          $ref: '#/components/responses/UnprocessableEntity'
-
-  /facilities/{facilityId}:
-    patch:
-      tags: [J1]
-      summary: Atualizar ou desativar unidade
-      description: Atualiza os dados de uma unidade ou marca como inativa (exclusão lógica).
-      operationId: updateFacility
-      x-roles: ["admin_esg"]
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
       parameters:
-        - $ref: '#/components/parameters/FacilityIdParam'
+      - $ref: '#/components/parameters/facilityId'
+    patch:
+      tags:
+      - J1
+      operationId: updateFacility
+      summary: Editar ou desativar unidade
+      description: Desativação bloqueia novas coletas, sem apagar entradas ou alterar snapshots anteriores.
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Facility'
+              example:
+                id: fac-1
+                code: LOJA-01
+                name: Loja Centro
+                isActive: true
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
+      parameters:
+      - $ref: '#/components/parameters/facilityId'
+      - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/FacilityUpdate'
+  /facilities/{facilityId}/sources:
+    get:
+      tags:
+      - J1
+      operationId: listSources
+      summary: Consultar fontes vinculadas
+      description: Consultar fontes vinculadas. Contrato-alvo; consultar ADR-008.
       responses:
         '200':
-          description: Unidade atualizada
+          description: Operação concluída
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Facility'
+                $ref: '#/components/schemas/EmissionSourceList'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
         '404':
-          $ref: '#/components/responses/NotFound'
-
-  /facilities/{facilityId}/sources:
-    post:
-      tags: [J1]
-      summary: Adicionar fonte de emissão à unidade
-      description: Vincula uma fonte de emissão (ex. Eletricidade, Frota) a uma unidade.
-      operationId: addEmissionSource
-      x-roles: ["admin_esg"]
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
       parameters:
-        - $ref: '#/components/parameters/FacilityIdParam'
+      - $ref: '#/components/parameters/facilityId'
+    post:
+      tags:
+      - J1
+      operationId: addSource
+      summary: Vincular fonte do catálogo
+      description: Vincular fonte do catálogo. Contrato-alvo; consultar ADR-008.
+      responses:
+        '201':
+          description: Operação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmissionSource'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
+      parameters:
+      - $ref: '#/components/parameters/facilityId'
+      - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/EmissionSourceCreate'
+  /facilities/{facilityId}/sources/{sourceId}:
+    patch:
+      tags:
+      - J1
+      operationId: updateSource
+      summary: Ativar ou desativar fonte
+      description: Tipo não pode ser trocado. Não apagar lançamentos/cálculos anteriores nem subtrair dados silenciosamente.
       responses:
-        '201':
-          description: Fonte de emissão vinculada
+        '200':
+          description: Operação concluída
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/EmissionSource'
-    get:
-      tags: [J1]
-      summary: Listar fontes de emissão da unidade
-      description: Lista todas as fontes ativas registadas para esta unidade.
-      operationId: listEmissionSources
-      x-roles: ["admin_esg", "analista_controladoria", "operador_unidade", "auditor"]
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
       parameters:
-        - $ref: '#/components/parameters/FacilityIdParam'
-      responses:
-        '200':
-          description: Lista de fontes de emissão
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/EmissionSource'
-
+      - $ref: '#/components/parameters/facilityId'
+      - $ref: '#/components/parameters/sourceId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmissionSourceUpdate'
   /catalogs/source-types:
     get:
-      tags: [J1]
-      summary: Obter catálogo de tipos de fonte
-      description: Retorna os tipos permitidos de fontes de emissão para a coleta guiada (Escopos 1 e 2).
-      operationId: getSourceTypesCatalog
-      x-roles: ["admin_esg", "analista_controladoria", "operador_unidade", "auditor"]
+      tags:
+      - J1
+      operationId: getSourceCatalog
+      summary: Consultar quatro fontes permitidas
+      description: Consultar quatro fontes permitidas. Contrato-alvo; consultar ADR-008.
       responses:
         '200':
-          description: Catálogo
+          description: Operação concluída
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: "mobile_combustion"
-
+                $ref: '#/components/schemas/SourceCatalog'
+              example:
+              - type: electricity
+                scope: '2'
+                baseUnit: kWh
+                acceptedUnits:
+                - kWh
+                - MWh
+              - type: diesel
+                scope: '1'
+                baseUnit: L
+                acceptedUnits:
+                - L
+              - type: gasoline
+                scope: '1'
+                baseUnit: L
+                acceptedUnits:
+                - L
+              - type: lpg
+                scope: '1'
+                baseUnit: kg
+                acceptedUnits:
+                - kg
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
   /facilities/{facilityId}/records:
-    post:
-      tags: [J2]
-      summary: Registar atividade mensal
-      description: Cria um registo de atividade mensal para uma fonte específica.
-      operationId: createActivityRecord
-      x-roles: ["admin_esg", "operador_unidade"]
+    get:
+      tags:
+      - J2
+      operationId: listRecords
+      summary: Listar consumos mensais
+      description: Listar consumos mensais. Contrato-alvo; consultar ADR-008.
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityRecordPage'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
       parameters:
-        - $ref: '#/components/parameters/FacilityIdParam'
+      - $ref: '#/components/parameters/facilityId'
+      - $ref: '#/components/parameters/Period'
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Cursor'
+    post:
+      tags:
+      - J2
+      operationId: createRecord
+      summary: Cadastrar consumo mensal
+      description: Uma chave por unidade/fonte/competência. Fonte ativa; quantidade >=0; unidade compatível. Zero
+        explícito é válido. Duplicidade retorna 409, salvo reenvio idempotente.
+      responses:
+        '201':
+          description: Operação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityRecord'
+              example:
+                id: rec-1
+                facilityId: fac-1
+                sourceId: src-1
+                period: 2026-10
+                currentRevision:
+                  id: rev-1
+                  recordId: rec-1
+                  revision: 1
+                  previousRevisionId: null
+                  quantity: '1'
+                  unit: MWh
+                  state: active
+                  authorUid: user-1
+                  createdAt: '2026-10-23T12:00:00Z'
+                  justification: null
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
+      parameters:
+      - $ref: '#/components/parameters/facilityId'
+      - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ActivityRecordCreate'
+            example:
+              sourceId: src-1
+              period: 2026-10
+              quantity: '1'
+              unit: MWh
+  /facilities/{facilityId}/records/{recordId}:
+    get:
+      tags:
+      - J2
+      operationId: getRecord
+      summary: Consultar lançamento corrente
+      description: Consultar lançamento corrente. Contrato-alvo; consultar ADR-008.
       responses:
-        '201':
-          description: Registo criado (estado pendente)
+        '200':
+          description: Operação concluída
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ActivityRecord'
+              example:
+                id: rec-1
+                facilityId: fac-1
+                sourceId: src-1
+                period: 2026-10
+                currentRevision:
+                  id: rev-1
+                  recordId: rec-1
+                  revision: 1
+                  previousRevisionId: null
+                  quantity: '1'
+                  unit: MWh
+                  state: active
+                  authorUid: user-1
+                  createdAt: '2026-10-23T12:00:00Z'
+                  justification: null
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
         '422':
-          $ref: '#/components/responses/UnprocessableEntity'
-    get:
-      tags: [J2]
-      summary: Listar registos mensais
-      description: Lista os registos da unidade por período.
-      operationId: listActivityRecords
-      x-roles: ["admin_esg", "analista_controladoria", "operador_unidade", "auditor"]
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
       parameters:
-        - $ref: '#/components/parameters/FacilityIdParam'
-        - name: period
-          in: query
-          required: false
-          schema:
-            $ref: '#/components/schemas/Period'
+      - $ref: '#/components/parameters/facilityId'
+      - $ref: '#/components/parameters/recordId'
+  /facilities/{facilityId}/records/{recordId}/revisions:
+    get:
+      tags:
+      - J2
+      operationId: listRevisions
+      summary: Consultar histórico de revisões
+      description: Consultar histórico de revisões. Contrato-alvo; consultar ADR-008.
       responses:
         '200':
-          description: Lista de registos
+          description: Operação concluída
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ActivityRecord'
-
+                $ref: '#/components/schemas/ActivityRevisionPage'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
+      parameters:
+      - $ref: '#/components/parameters/facilityId'
+      - $ref: '#/components/parameters/recordId'
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Cursor'
   /facilities/{facilityId}/records/{recordId}/correct:
     post:
-      tags: [J2]
-      summary: Correção retroativa de registo
-      description: Cria uma nova revisão para um registo existente, marcando a justificação.
-      operationId: correctActivityRecord
-      x-roles: ["admin_esg", "operador_unidade"]
+      tags:
+      - J2
+      operationId: correctRecord
+      summary: Corrigir quantidade preservando origem
+      description: Cria revisão ativa com quantidade/unidade compatível, motivo e revisão-base. Não altera identificação
+        unidade/fonte/competência; não corrige registro cancelado. Base desatualizada retorna 409. Reenvio idempotente
+        retorna anterior sem nova revisão.
+      responses:
+        '201':
+          description: Operação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityRecord'
+              example:
+                id: rec-1
+                facilityId: fac-1
+                sourceId: src-1
+                period: 2026-10
+                currentRevision:
+                  id: rev-1
+                  recordId: rec-1
+                  revision: 1
+                  previousRevisionId: null
+                  quantity: '1'
+                  unit: MWh
+                  state: active
+                  authorUid: user-1
+                  createdAt: '2026-10-23T12:00:00Z'
+                  justification: null
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
       parameters:
-        - $ref: '#/components/parameters/FacilityIdParam'
-        - $ref: '#/components/parameters/RecordIdParam'
+      - $ref: '#/components/parameters/facilityId'
+      - $ref: '#/components/parameters/recordId'
+      - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ActivityRecordCorrection'
+            example:
+              baseRevision: 1
+              quantity: '1.2'
+              unit: MWh
+              justification: Conferência da conta
+  /facilities/{facilityId}/records/{recordId}/cancel:
+    post:
+      tags:
+      - J2
+      operationId: cancelRecord
+      summary: Cancelar sem apagar histórico
+      description: Após confirmação na interface, cria revisão cancelled e retira do total corrente. Preserva snapshot
+        anterior e reserva a chave. Sem exclusão física ou reativação. Reenvio idempotente não gera revisão extra.
       responses:
         '201':
-          description: Nova revisão criada
+          description: Operação concluída
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ActivityRecord'
-
-  /facilities/{facilityId}/records/{recordId}/approve:
-    post:
-      tags: [J2]
-      summary: Aprovar registo
-      description: Aprova um registo, tornando-o elegível para cálculo.
-      operationId: approveActivityRecord
-      x-roles: ["admin_esg", "analista_controladoria"]
+              example:
+                id: rec-1
+                facilityId: fac-1
+                sourceId: src-1
+                period: 2026-10
+                currentRevision:
+                  id: rev-1
+                  recordId: rec-1
+                  revision: 1
+                  previousRevisionId: null
+                  quantity: '1'
+                  unit: MWh
+                  state: active
+                  authorUid: user-1
+                  createdAt: '2026-10-23T12:00:00Z'
+                  justification: null
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
       parameters:
-        - $ref: '#/components/parameters/FacilityIdParam'
-        - $ref: '#/components/parameters/RecordIdParam'
-      responses:
-        '200':
-          description: Registo aprovado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ActivityRecord'
-
-  /methodologies:
-    get:
-      tags: [J3]
-      summary: Listar metodologias
-      description: Lista metodologias de cálculo disponíveis.
-      operationId: listMethodologies
-      x-roles: ["admin_esg", "analista_controladoria", "auditor"]
-      responses:
-        '200':
-          description: Lista de metodologias
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Methodology'
-
-  /methodologies/{methodologyId}/factor-versions:
-    post:
-      tags: [J3]
-      summary: Publicar nova versão de fatores
-      description: Publica uma nova versão imutável de fatores de conversão.
-      operationId: publishFactorVersion
-      x-roles: ["admin_esg"]
-      parameters:
-        - $ref: '#/components/parameters/MethodologyIdParam'
+      - $ref: '#/components/parameters/facilityId'
+      - $ref: '#/components/parameters/recordId'
+      - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FactorVersionCreate'
+              $ref: '#/components/schemas/ActivityRecordCancellation'
+            example:
+              baseRevision: 2
+              justification: Lançamento indevido
+  /factor-versions:
+    get:
+      tags:
+      - J3
+      operationId: listFactorVersions
+      summary: Consultar versões preparadas pela equipe
+      description: Consultar versões preparadas pela equipe. Contrato-alvo; consultar ADR-008.
       responses:
-        '201':
-          description: Versão de fatores publicada
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FactorVersionPage'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
+      parameters:
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Cursor'
+  /factor-versions/{versionId}:
+    get:
+      tags:
+      - J3
+      operationId: getFactorVersion
+      summary: Consultar fatores imutáveis
+      description: Consultar fatores imutáveis. Contrato-alvo; consultar ADR-008.
+      responses:
+        '200':
+          description: Operação concluída
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/FactorVersion'
-    get:
-      tags: [J3]
-      summary: Listar versões de fatores
-      description: Lista as versões de fatores de uma metodologia.
-      operationId: listFactorVersions
-      x-roles: ["admin_esg", "analista_controladoria", "auditor"]
+              example:
+                versionId: A
+                validFrom: 2025-01
+                methodologyVersion: simple-v1
+                methodologyDescription: Fator agregado sintético somente para ensaio; não é fator ambiental homologado.
+                factors:
+                - sourceType: electricity
+                  scope: '2'
+                  baseUnit: kWh
+                  kgCo2ePerUnit: '0.5'
+                  reference: Massa sintética D01/D03
+                  status: preliminary
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
       parameters:
-        - $ref: '#/components/parameters/MethodologyIdParam'
+      - $ref: '#/components/parameters/versionId'
+  /calculations:
+    get:
+      tags:
+      - J3
+      operationId: listCalculations
+      summary: Listar snapshots salvos
+      description: Listar snapshots salvos. Contrato-alvo; consultar ADR-008.
       responses:
         '200':
-          description: Lista de versões
+          description: Operação concluída
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/FactorVersion'
-
-  /calculations:
-    post:
-      tags: [J3]
-      summary: Criar cálculo
-      description: >
-        Executa o cálculo de emissões para um período. 
-        Utiliza identificação por conteúdo (hash). Se a requisição e as entradas resultarem 
-        no mesmo hash de um cálculo já existente, devolve 200 OK com o recurso prévio.
-      operationId: createCalculation
-      x-roles: ["admin_esg", "analista_controladoria"]
+                $ref: '#/components/schemas/CalculationPage'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      - $ref: '#/components/parameters/Period'
+      - $ref: '#/components/parameters/FacilityFilter'
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Cursor'
+    post:
+      tags:
+      - J3
+      operationId: createCalculation
+      summary: Calcular e salvar snapshot corrente
+      description: Captura uma revisão corrente não cancelada por lançamento, configurações, entradas, fatores compatíveis
+        vigentes, conversões, metodologia e valores exatos. Inclui pendências e totais parciais rotulados. A opção
+        facilityId restringe à unidade da própria empresa. Não exige aprovação/fechamento.
+      responses:
+        '201':
+          description: Operação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Calculation'
+              example:
+                id: calc-A
+                tenantId: empresa-a
+                period: 2026-10
+                methodologyVersion: simple-v1
+                roundingPolicy: ROUND_HALF_EVEN
+                displayDecimalPlaces: 3
+                createdByUid: user-1
+                createdAt: '2026-10-23T12:01:00Z'
+                lines:
+                - recordId: rec-A
+                  revisionId: rev-A
+                  facilityId: fac-1
+                  sourceId: src-A
+                  sourceType: electricity
+                  scope: '2'
+                  originalQuantity: '100'
+                  originalUnit: kWh
+                  conversionMultiplier: '1'
+                  baseQuantity: '100'
+                  baseUnit: kWh
+                  factorVersionId: A
+                  factorValue: '0.5'
+                  factorReference: Massa sintética D03
+                  factorStatus: preliminary
+                  methodologyVersion: simple-v1
+                  emissionKgCo2e: '50'
+                  authorUid: user-1
+                  recordedAt: '2026-10-23T12:00:00Z'
+                facilities:
+                - facilityId: fac-1
+                  code: LOJA-01
+                  name: Loja Centro
+                  isActive: true
+                  expectedSourceIds:
+                  - src-A
+                  missingSourceIds: []
+                  complete: true
+                  scope1KgCo2e: '0'
+                  scope2KgCo2e: '50'
+                  totalKgCo2e: '50'
+                scope1KgCo2e: '0'
+                scope2KgCo2e: '50'
+                totalKgCo2e: '50'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/CalculationRequest'
-      responses:
-        '201':
-          description: Cálculo processado com sucesso (novo identificador)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Calculation'
-        '200':
-          description: Cálculo idêntico já existente (Cena da Demo - recalcular com o mesmo fator)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Calculation'
-              examples:
-                recalculo_identico:
-                  summary: Recálculo devolve exato mesmo hash e resultados
-                  value:
-                    id: "calc_8f4e2d1a"
-                    contentHash: "sha256:8f4e2d1a..."
-                    period: "2026-05"
-                    methodologyVersion: "v1.0"
-                    roundingPolicy: "ROUND_HALF_EVEN"
-                    totalEmissionsCo2e: "0.24500"
-                    details:
-                      - source: "Eletricidade"
-                        quantity: "100.00"
-                        factorApplied: "0.00245"
-                        emissions: "0.24500"
-        '409':
-          $ref: '#/components/responses/Conflict'
+            example:
+              period: 2026-10
+  /calculations/{calculationId}:
     get:
-      tags: [J3]
-      summary: Listar cálculos
-      description: Lista cálculos executados por período.
-      operationId: listCalculations
-      x-roles: ["admin_esg", "analista_controladoria", "auditor"]
-      parameters:
-        - name: period
-          in: query
-          required: false
-          schema:
-            $ref: '#/components/schemas/Period'
+      tags:
+      - J3
+      operationId: getCalculation
+      summary: Consultar resultado e origem
+      description: Consultar resultado e origem. Contrato-alvo; consultar ADR-008.
       responses:
         '200':
-          description: Lista de cálculos
+          description: Operação concluída
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Calculation'
-
+                $ref: '#/components/schemas/Calculation'
+              example:
+                id: calc-A
+                tenantId: empresa-a
+                period: 2026-10
+                methodologyVersion: simple-v1
+                roundingPolicy: ROUND_HALF_EVEN
+                displayDecimalPlaces: 3
+                createdByUid: user-1
+                createdAt: '2026-10-23T12:01:00Z'
+                lines:
+                - recordId: rec-A
+                  revisionId: rev-A
+                  facilityId: fac-1
+                  sourceId: src-A
+                  sourceType: electricity
+                  scope: '2'
+                  originalQuantity: '100'
+                  originalUnit: kWh
+                  conversionMultiplier: '1'
+                  baseQuantity: '100'
+                  baseUnit: kWh
+                  factorVersionId: A
+                  factorValue: '0.5'
+                  factorReference: Massa sintética D03
+                  factorStatus: preliminary
+                  methodologyVersion: simple-v1
+                  emissionKgCo2e: '50'
+                  authorUid: user-1
+                  recordedAt: '2026-10-23T12:00:00Z'
+                facilities:
+                - facilityId: fac-1
+                  code: LOJA-01
+                  name: Loja Centro
+                  isActive: true
+                  expectedSourceIds:
+                  - src-A
+                  missingSourceIds: []
+                  complete: true
+                  scope1KgCo2e: '0'
+                  scope2KgCo2e: '50'
+                  totalKgCo2e: '50'
+                scope1KgCo2e: '0'
+                scope2KgCo2e: '50'
+                totalKgCo2e: '50'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
+      parameters:
+      - $ref: '#/components/parameters/calculationId'
+  /calculations/{calculationId}/recalculate:
+    post:
+      tags:
+      - J3
+      operationId: recalculate
+      summary: Reproduzir com entradas e fatores originais
+      description: Recompõe exclusivamente o snapshot salvo, mesmo após B/correção/cancelamento. Não altera original
+        nem usa fatores correntes. Resultado esperado differenceKgCo2e=0 e matchesOriginal=true; divergência deve
+        ser registrada como falha.
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recalculation'
+              example:
+                calculation:
+                  id: calc-A
+                  tenantId: empresa-a
+                  period: 2026-10
+                  methodologyVersion: simple-v1
+                  roundingPolicy: ROUND_HALF_EVEN
+                  displayDecimalPlaces: 3
+                  createdByUid: user-1
+                  createdAt: '2026-10-23T12:01:00Z'
+                  lines:
+                  - recordId: rec-A
+                    revisionId: rev-A
+                    facilityId: fac-1
+                    sourceId: src-A
+                    sourceType: electricity
+                    scope: '2'
+                    originalQuantity: '100'
+                    originalUnit: kWh
+                    conversionMultiplier: '1'
+                    baseQuantity: '100'
+                    baseUnit: kWh
+                    factorVersionId: A
+                    factorValue: '0.5'
+                    factorReference: Massa sintética D03
+                    factorStatus: preliminary
+                    methodologyVersion: simple-v1
+                    emissionKgCo2e: '50'
+                    authorUid: user-1
+                    recordedAt: '2026-10-23T12:00:00Z'
+                  facilities:
+                  - facilityId: fac-1
+                    code: LOJA-01
+                    name: Loja Centro
+                    isActive: true
+                    expectedSourceIds:
+                    - src-A
+                    missingSourceIds: []
+                    complete: true
+                    scope1KgCo2e: '0'
+                    scope2KgCo2e: '50'
+                    totalKgCo2e: '50'
+                  scope1KgCo2e: '0'
+                  scope2KgCo2e: '50'
+                  totalKgCo2e: '50'
+                differenceKgCo2e: '0'
+                matchesOriginal: true
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
+      parameters:
+      - $ref: '#/components/parameters/calculationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
   /dashboard/summary:
     get:
-      tags: [J4]
-      summary: Resumo da rede
-      description: Agregado de emissões de todas as unidades para um período.
-      operationId: getNetworkSummary
-      x-roles: ["admin_esg", "analista_controladoria"]
-      parameters:
-        - name: period
-          in: query
-          required: true
-          schema:
-            $ref: '#/components/schemas/Period'
+      tags:
+      - J4
+      operationId: getSummary
+      summary: Consultar total e ranking do snapshot
+      description: Somar o snapshot completo autorizado, não a página. Itens incluem completas e pendentes; completas/ativas
+        com >=1 fonte são ordenadas por total decrescente/código e recebem posição. Pendentes sem posição. Totais
+        parciais/ausência explícitos. Mediana calculada somente das elegíveis, inclusive zeros; exibição em 3 casas
+        ROUND_HALF_EVEN com diferença de arredondamento.
       responses:
         '200':
-          description: Dados consolidados
+          description: Operação concluída
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/NetworkSummary'
-
+              example:
+                calculationId: calc-A
+                period: 2026-10
+                scope1KgCo2e: '0'
+                scope2KgCo2e: '50'
+                totalKgCo2e: '50'
+                displayTotalKgCo2e: '50.000'
+                displaySumFacilitiesKgCo2e: '50.000'
+                displayRoundingDifferenceKgCo2e: '0.000'
+                eligibleFacilityCount: 1
+                medianKgCo2e: '50'
+                comparisonStatus: insufficient_sample
+                items:
+                - facility:
+                    facilityId: fac-1
+                    code: LOJA-01
+                    name: Loja Centro
+                    isActive: true
+                    expectedSourceIds:
+                    - src-A
+                    missingSourceIds: []
+                    complete: true
+                    scope1KgCo2e: '0'
+                    scope2KgCo2e: '50'
+                    totalKgCo2e: '50'
+                  rankingPosition: 1
+                  deviationPercentage: null
+                  isOutlier: null
+                nextCursor: null
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
+      parameters:
+      - $ref: '#/components/parameters/CalculationIdQuery'
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Cursor'
   /dashboard/outliers:
     get:
-      tags: [J4]
-      summary: Análise de outliers pela mediana
-      description: >
-        Identifica as franquias cujas emissões se desviam substancialmente da mediana da rede 
-        (ex: desvio relativo superior a 50% face à mediana).
+      tags:
+      - J4
       operationId: getOutliers
-      x-roles: ["admin_esg", "analista_controladoria"]
-      parameters:
-        - name: period
-          in: query
-          required: true
-          schema:
-            $ref: '#/components/schemas/Period'
+      summary: Consultar alertas pela mediana
+      description: 'Somente completas/ativas com >=1 fonte. >=3 elegíveis e mediana>0: abs((valor-mediana)/mediana*100)>50,
+        antes de arredondar. Igual a 50 não alerta. Menos de 3: insufficient_sample; caso contrário mediana zero:
+        zero_median. Nesses casos items=[] e nenhuma classificação. Operacional, sem alegação estatística/eficiência;
+        mediana usa todo o snapshot, não a página.'
       responses:
         '200':
-          description: Lista de unidades outliers e a métrica central
+          description: Operação concluída
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  networkMedianEmissions:
-                    $ref: '#/components/schemas/DecimalString'
-                  outliers:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Outlier'
-              examples:
-                demo_outliers:
-                  summary: Comparação com a mediana da rede
-                  value:
-                    networkMedianEmissions: "45.000"
-                    outliers:
-                      - facilityId: "fac_999"
-                        emissions: "120.500"
-                        deviationPercentage: "167.77"
-
+                $ref: '#/components/schemas/OutlierAnalysis'
+              example:
+                calculationId: calc-demo
+                status: ok
+                eligibleFacilityCount: 3
+                medianKgCo2e: '100'
+                thresholdPercentage: '50'
+                items:
+                - facilityId: fac-3
+                  emissionKgCo2e: '200'
+                  deviationPercentage: '100'
+                nextCursor: null
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
+      parameters:
+      - $ref: '#/components/parameters/CalculationIdQuery'
+      - $ref: '#/components/parameters/Limit'
+      - $ref: '#/components/parameters/Cursor'
   /reports:
     post:
-      tags: [J5]
-      summary: Gerar relatório (Assíncrono)
-      description: Solicita a geração de um relatório PDF ou CSV com a trilha de auditoria completa.
+      tags:
+      - J5
       operationId: generateReport
-      x-roles: ["admin_esg", "auditor"]
+      summary: Gerar PDF ou CSV síncrono do snapshot
+      description: Must do MVP até 05/12, fora das 20 issues CP2. Ambos usam mesmo calculationId imutável e incluem
+        referências/revisões, fatores, metodologia, UID/datas e pendências/preliminaridade. Sem aprovação, fechamento,
+        job, Storage obrigatório ou manifesto. CSV vazio contém cabeçalho; PDF vazio explica ausência de registros.
+      responses:
+        '200':
+          description: Arquivo conforme formato solicitado; nome e MIME coerentes. Dados do snapshot não mudam;
+            data de geração pode mudar.
+          headers:
+            Content-Disposition:
+              description: attachment; filename=carbontrace.pdf ou carbontrace.csv
+              schema:
+                type: string
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+      x-roles:
+      - funcionario
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                format:
-                  type: string
-                  enum: [pdf, csv]
-                period:
-                  $ref: '#/components/schemas/Period'
-      responses:
-        '202':
-          description: Pedido de geração aceite
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ReportJob'
-
-  /reports/{reportId}/download:
-    get:
-      tags: [J5]
-      summary: Obter link de download do relatório
-      description: Retorna uma URL assinada (temporária) do Cloud Storage para baixar o ficheiro.
-      operationId: downloadReport
-      x-roles: ["admin_esg", "auditor"]
-      parameters:
-        - name: reportId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: URL assinada devolvida
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  downloadUrl:
-                    type: string
-                    format: uri
-                  expiresAt:
-                    type: string
-                    format: date-time
-
-  /audit-events:
-    get:
-      tags: [J5]
-      summary: Consultar trilha de auditoria
-      description: Histórico imutável de ações no sistema (ex. registos aprovados, correções, recálculos).
-      operationId: listAuditEvents
-      x-roles: ["admin_esg", "auditor"]
-      parameters:
-        - $ref: '#/components/parameters/LimitParam'
-        - $ref: '#/components/parameters/CursorParam'
-      responses:
-        '200':
-          description: Lista paginada de eventos
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/AuditEvent'
-                  nextCursor:
-                    type: ["string", "null"]
-
+              $ref: '#/components/schemas/ReportRequest'
+            example:
+              calculationId: calc-A
+              format: pdf
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-  
+      description: Token Firebase verificado pela API; claims tenant_id e papel=funcionario.
   parameters:
-    LimitParam:
+    Limit:
       name: limit
       in: query
       schema:
         type: integer
+        minimum: 1
+        maximum: 100
         default: 20
-    CursorParam:
+    Cursor:
       name: cursor
       in: query
       schema:
         type: string
-    FacilityIdParam:
+        minLength: 1
+    Period:
+      name: period
+      in: query
+      schema:
+        $ref: '#/components/schemas/Period'
+    FacilityFilter:
       name: facilityId
-      in: path
+      in: query
+      schema:
+        type: string
+    CalculationIdQuery:
+      name: calculationId
+      in: query
       required: true
       schema:
         type: string
-    RecordIdParam:
-      name: recordId
-      in: path
-      required: true
-      schema:
-        type: string
-    MethodologyIdParam:
-      name: methodologyId
-      in: path
-      required: true
-      schema:
-        type: string
-    IdempotencyKeyHeader:
+    IdempotencyKey:
       name: Idempotency-Key
       in: header
       required: true
       schema:
         type: string
-
+        minLength: 1
+        maxLength: 128
+      description: Escopo tenant+usuário+operação+recurso; janela 24h; mesma chave com payload diferente retorna
+        409.
+    facilityId:
+      name: facilityId
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+    sourceId:
+      name: sourceId
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+    recordId:
+      name: recordId
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+    calculationId:
+      name: calculationId
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+    versionId:
+      name: versionId
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
   schemas:
     DecimalString:
       type: string
-      pattern: '^-?\d+(\.\d+)?$'
-      description: Número decimal exato formatado como string, com o ponto a separar a dízima.
+      pattern: ^-?\d+(\.\d+)?$
+      description: Decimal finito exato, sem notação científica; nunca um número JSON.
+    QuantityString:
+      type: string
+      pattern: ^\d+(\.\d+)?$
+      description: Decimal finito >=0; precisão suportada validada pela API sem arredondamento silencioso.
     Period:
       type: string
-      pattern: '^\d{4}-(0[1-9]|1[0-2])$'
-      description: Período no formato AAAA-MM
+      pattern: ^\d{4}-(0[1-9]|1[0-2])$
+    SourceType:
+      type: string
+      enum:
+      - electricity
+      - diesel
+      - gasoline
+      - lpg
+    Unit:
+      type: string
+      enum:
+      - kWh
+      - MWh
+      - L
+      - kg
+    Reason:
+      type: string
+      minLength: 1
+      pattern: \S
+      description: Motivo com pelo menos um caractere não branco.
     UserProfile:
       type: object
+      additionalProperties: false
+      required:
+      - uid
+      - tenantId
+      - role
       properties:
-        uid: { type: string }
-        tenantId: { type: string }
-        role: { type: string }
-    Facility:
-      type: object
-      properties:
-        id: { type: string }
-        name: { type: string }
-        isActive: { type: boolean }
+        uid:
+          type: string
+        tenantId:
+          type: string
+        role:
+          type: string
+          enum:
+          - funcionario
+      examples:
+      - uid: user-1
+        tenantId: empresa-a
+        role: funcionario
     FacilityCreate:
       type: object
-      required: [name]
+      additionalProperties: false
+      required:
+      - code
+      - name
       properties:
-        name: { type: string }
+        code:
+          type: string
+          minLength: 1
+          pattern: \S
+        name:
+          type: string
+          minLength: 1
+          pattern: \S
+      examples:
+      - code: LOJA-01
+        name: Loja Centro
     FacilityUpdate:
       type: object
+      additionalProperties: false
+      required: []
       properties:
-        name: { type: string }
-        isActive: { type: boolean }
-    EmissionSource:
+        code:
+          type: string
+          minLength: 1
+          pattern: \S
+        name:
+          type: string
+          minLength: 1
+          pattern: \S
+        isActive:
+          type: boolean
+      minProperties: 1
+    Facility:
       type: object
+      additionalProperties: false
+      required:
+      - id
+      - code
+      - name
+      - isActive
       properties:
-        id: { type: string }
-        type: { type: string }
-        isActive: { type: boolean }
+        id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        isActive:
+          type: boolean
+      examples:
+      - id: fac-1
+        code: LOJA-01
+        name: Loja Centro
+        isActive: true
     EmissionSourceCreate:
       type: object
-      required: [type]
+      additionalProperties: false
+      required:
+      - type
       properties:
-        type: { type: string }
-    ActivityRecord:
+        type:
+          $ref: '#/components/schemas/SourceType'
+    EmissionSourceUpdate:
       type: object
+      additionalProperties: false
+      required:
+      - isActive
       properties:
-        id: { type: string }
-        sourceId: { type: string }
-        period: { $ref: '#/components/schemas/Period' }
-        quantity: { $ref: '#/components/schemas/DecimalString' }
-        unit: { type: string }
-        status: { type: string, enum: [pending, approved, replaced] }
-        revision: { type: integer }
-    ActivityRecordCreate:
+        isActive:
+          type: boolean
+    EmissionSource:
       type: object
-      required: [sourceId, period, quantity, unit]
+      additionalProperties: false
+      required:
+      - id
+      - facilityId
+      - type
+      - isActive
       properties:
-        sourceId: { type: string }
-        period: { $ref: '#/components/schemas/Period' }
-        quantity: { $ref: '#/components/schemas/DecimalString' }
-        unit: { type: string }
-    ActivityRecordCorrection:
+        id:
+          type: string
+        facilityId:
+          type: string
+        type:
+          $ref: '#/components/schemas/SourceType'
+        isActive:
+          type: boolean
+    SourceCatalogEntry:
       type: object
-      required: [quantity, justification]
+      additionalProperties: false
+      required:
+      - type
+      - scope
+      - baseUnit
+      - acceptedUnits
       properties:
-        quantity: { $ref: '#/components/schemas/DecimalString' }
-        justification: { type: string }
-    Methodology:
-      type: object
-      properties:
-        id: { type: string }
-        name: { type: string }
-    FactorVersion:
-      type: object
-      properties:
-        versionId: { type: string }
-        validFrom: { type: string, format: date }
-        isObsolete: { type: boolean }
-    FactorVersionCreate:
-      type: object
-      required: [validFrom, data]
-      properties:
-        validFrom: { type: string, format: date }
-        data: { type: object }
-    CalculationRequest:
-      type: object
-      required: [period]
-      properties:
-        period: { $ref: '#/components/schemas/Period' }
-        facilityId: { type: string }
-    Calculation:
-      type: object
-      properties:
-        id: { type: string }
-        contentHash: { type: string }
-        totalEmissionsCo2e: { $ref: '#/components/schemas/DecimalString' }
-    NetworkSummary:
-      type: object
-      properties:
-        period: { $ref: '#/components/schemas/Period' }
-        calculationIdsUsed:
-          type: array
-          items: { type: string }
-        totalEmissionsCo2e: { $ref: '#/components/schemas/DecimalString' }
-    Outlier:
-      type: object
-      properties:
-        facilityId: { type: string }
-        emissions: { $ref: '#/components/schemas/DecimalString' }
-        deviationPercentage: { $ref: '#/components/schemas/DecimalString' }
-    ReportJob:
-      type: object
-      properties:
-        jobId: { type: string }
-        status: { type: string, enum: [processing, completed, failed] }
-    AuditEvent:
-      type: object
-      properties:
-        eventId: { type: string }
-        action: { type: string }
-        actorUid: { type: string }
-        timestamp: { type: string, format: date-time }
-    ErrorProblem:
-      type: object
-      properties:
-        type: { type: string, format: uri }
-        title: { type: string }
-        status: { type: integer }
-        detail: { type: string }
-        code: { type: string }
-        traceId: { type: string }
-        errors:
+        type:
+          $ref: '#/components/schemas/SourceType'
+        scope:
+          type: string
+          enum:
+          - '1'
+          - '2'
+        baseUnit:
+          $ref: '#/components/schemas/Unit'
+        acceptedUnits:
           type: array
           items:
-            type: object
-            properties:
-              field: { type: string }
-              message: { type: string }
-
+            $ref: '#/components/schemas/Unit'
+    ActivityRecordCreate:
+      type: object
+      additionalProperties: false
+      required:
+      - sourceId
+      - period
+      - quantity
+      - unit
+      properties:
+        sourceId:
+          type: string
+        period:
+          $ref: '#/components/schemas/Period'
+        quantity:
+          $ref: '#/components/schemas/QuantityString'
+        unit:
+          $ref: '#/components/schemas/Unit'
+      examples:
+      - sourceId: src-1
+        period: 2026-10
+        quantity: '1'
+        unit: MWh
+    ActivityRecordCorrection:
+      type: object
+      additionalProperties: false
+      required:
+      - baseRevision
+      - quantity
+      - unit
+      - justification
+      properties:
+        baseRevision:
+          type: integer
+          minimum: 1
+        quantity:
+          $ref: '#/components/schemas/QuantityString'
+        unit:
+          $ref: '#/components/schemas/Unit'
+        justification:
+          $ref: '#/components/schemas/Reason'
+      examples:
+      - baseRevision: 1
+        quantity: '1.2'
+        unit: MWh
+        justification: Conferência da conta
+    ActivityRecordCancellation:
+      type: object
+      additionalProperties: false
+      required:
+      - baseRevision
+      - justification
+      properties:
+        baseRevision:
+          type: integer
+          minimum: 1
+        justification:
+          $ref: '#/components/schemas/Reason'
+      examples:
+      - baseRevision: 2
+        justification: Lançamento indevido
+    ActivityRevision:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - recordId
+      - revision
+      - previousRevisionId
+      - quantity
+      - unit
+      - state
+      - authorUid
+      - createdAt
+      - justification
+      properties:
+        id:
+          type: string
+        recordId:
+          type: string
+        revision:
+          type: integer
+          minimum: 1
+        previousRevisionId:
+          anyOf:
+          - type: string
+          - type: 'null'
+        quantity:
+          $ref: '#/components/schemas/QuantityString'
+        unit:
+          $ref: '#/components/schemas/Unit'
+        state:
+          type: string
+          enum:
+          - active
+          - cancelled
+        authorUid:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        justification:
+          anyOf:
+          - $ref: '#/components/schemas/Reason'
+          - type: 'null'
+      examples:
+      - &id001
+        id: rev-1
+        recordId: rec-1
+        revision: 1
+        previousRevisionId: null
+        quantity: '1'
+        unit: MWh
+        state: active
+        authorUid: user-1
+        createdAt: '2026-10-23T12:00:00Z'
+        justification: null
+    ActivityRecord:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - facilityId
+      - sourceId
+      - period
+      - currentRevision
+      properties:
+        id:
+          type: string
+        facilityId:
+          type: string
+        sourceId:
+          type: string
+        period:
+          $ref: '#/components/schemas/Period'
+        currentRevision:
+          $ref: '#/components/schemas/ActivityRevision'
+      examples:
+      - id: rec-1
+        facilityId: fac-1
+        sourceId: src-1
+        period: 2026-10
+        currentRevision: *id001
+    Factor:
+      type: object
+      additionalProperties: false
+      required:
+      - sourceType
+      - scope
+      - baseUnit
+      - kgCo2ePerUnit
+      - reference
+      - status
+      properties:
+        sourceType:
+          $ref: '#/components/schemas/SourceType'
+        scope:
+          type: string
+          enum:
+          - '1'
+          - '2'
+        baseUnit:
+          $ref: '#/components/schemas/Unit'
+        kgCo2ePerUnit:
+          $ref: '#/components/schemas/QuantityString'
+        reference:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          enum:
+          - preliminary
+          - verified
+    FactorVersion:
+      type: object
+      additionalProperties: false
+      required:
+      - versionId
+      - validFrom
+      - methodologyVersion
+      - methodologyDescription
+      - factors
+      properties:
+        versionId:
+          type: string
+        validFrom:
+          $ref: '#/components/schemas/Period'
+        methodologyVersion:
+          type: string
+        methodologyDescription:
+          type: string
+          minLength: 1
+        factors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Factor'
+      examples:
+      - versionId: A
+        validFrom: 2025-01
+        methodologyVersion: simple-v1
+        methodologyDescription: Fator agregado sintético somente para ensaio; não é fator ambiental homologado.
+        factors:
+        - sourceType: electricity
+          scope: '2'
+          baseUnit: kWh
+          kgCo2ePerUnit: '0.5'
+          reference: Massa sintética D01/D03
+          status: preliminary
+    CalculationRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - period
+      properties:
+        period:
+          $ref: '#/components/schemas/Period'
+        facilityId:
+          type: string
+      examples:
+      - period: 2026-10
+    CalculationLine:
+      type: object
+      additionalProperties: false
+      required:
+      - recordId
+      - revisionId
+      - facilityId
+      - sourceId
+      - sourceType
+      - scope
+      - originalQuantity
+      - originalUnit
+      - conversionMultiplier
+      - baseQuantity
+      - baseUnit
+      - factorVersionId
+      - factorValue
+      - factorReference
+      - factorStatus
+      - methodologyVersion
+      - emissionKgCo2e
+      - authorUid
+      - recordedAt
+      properties:
+        recordId:
+          type: string
+        revisionId:
+          type: string
+        facilityId:
+          type: string
+        sourceId:
+          type: string
+        sourceType:
+          $ref: '#/components/schemas/SourceType'
+        scope:
+          type: string
+          enum:
+          - '1'
+          - '2'
+        originalQuantity:
+          $ref: '#/components/schemas/QuantityString'
+        originalUnit:
+          $ref: '#/components/schemas/Unit'
+        conversionMultiplier:
+          $ref: '#/components/schemas/QuantityString'
+        baseQuantity:
+          $ref: '#/components/schemas/QuantityString'
+        baseUnit:
+          $ref: '#/components/schemas/Unit'
+        factorVersionId:
+          type: string
+        factorValue:
+          $ref: '#/components/schemas/QuantityString'
+        factorReference:
+          type: string
+        factorStatus:
+          type: string
+          enum:
+          - preliminary
+          - verified
+        methodologyVersion:
+          type: string
+        emissionKgCo2e:
+          $ref: '#/components/schemas/QuantityString'
+        authorUid:
+          type: string
+        recordedAt:
+          type: string
+          format: date-time
+    FacilityResult:
+      type: object
+      additionalProperties: false
+      required:
+      - facilityId
+      - code
+      - name
+      - isActive
+      - expectedSourceIds
+      - missingSourceIds
+      - complete
+      - scope1KgCo2e
+      - scope2KgCo2e
+      - totalKgCo2e
+      properties:
+        facilityId:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        isActive:
+          type: boolean
+        expectedSourceIds:
+          type: array
+          items:
+            type: string
+        missingSourceIds:
+          type: array
+          items:
+            type: string
+        complete:
+          type: boolean
+        scope1KgCo2e:
+          $ref: '#/components/schemas/QuantityString'
+        scope2KgCo2e:
+          $ref: '#/components/schemas/QuantityString'
+        totalKgCo2e:
+          $ref: '#/components/schemas/QuantityString'
+    Calculation:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - tenantId
+      - period
+      - methodologyVersion
+      - roundingPolicy
+      - displayDecimalPlaces
+      - createdByUid
+      - createdAt
+      - lines
+      - facilities
+      - scope1KgCo2e
+      - scope2KgCo2e
+      - totalKgCo2e
+      properties:
+        id:
+          type: string
+        tenantId:
+          type: string
+        period:
+          $ref: '#/components/schemas/Period'
+        methodologyVersion:
+          type: string
+        roundingPolicy:
+          type: string
+          enum:
+          - ROUND_HALF_EVEN
+        displayDecimalPlaces:
+          type: integer
+          const: 3
+        createdByUid:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/CalculationLine'
+        facilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacilityResult'
+        scope1KgCo2e:
+          $ref: '#/components/schemas/QuantityString'
+        scope2KgCo2e:
+          $ref: '#/components/schemas/QuantityString'
+        totalKgCo2e:
+          $ref: '#/components/schemas/QuantityString'
+      examples:
+      - &id002
+        id: calc-A
+        tenantId: empresa-a
+        period: 2026-10
+        methodologyVersion: simple-v1
+        roundingPolicy: ROUND_HALF_EVEN
+        displayDecimalPlaces: 3
+        createdByUid: user-1
+        createdAt: '2026-10-23T12:01:00Z'
+        lines:
+        - recordId: rec-A
+          revisionId: rev-A
+          facilityId: fac-1
+          sourceId: src-A
+          sourceType: electricity
+          scope: '2'
+          originalQuantity: '100'
+          originalUnit: kWh
+          conversionMultiplier: '1'
+          baseQuantity: '100'
+          baseUnit: kWh
+          factorVersionId: A
+          factorValue: '0.5'
+          factorReference: Massa sintética D03
+          factorStatus: preliminary
+          methodologyVersion: simple-v1
+          emissionKgCo2e: '50'
+          authorUid: user-1
+          recordedAt: '2026-10-23T12:00:00Z'
+        facilities:
+        - &id003
+          facilityId: fac-1
+          code: LOJA-01
+          name: Loja Centro
+          isActive: true
+          expectedSourceIds:
+          - src-A
+          missingSourceIds: []
+          complete: true
+          scope1KgCo2e: '0'
+          scope2KgCo2e: '50'
+          totalKgCo2e: '50'
+        scope1KgCo2e: '0'
+        scope2KgCo2e: '50'
+        totalKgCo2e: '50'
+    Recalculation:
+      type: object
+      additionalProperties: false
+      required:
+      - calculation
+      - differenceKgCo2e
+      - matchesOriginal
+      properties:
+        calculation:
+          $ref: '#/components/schemas/Calculation'
+        differenceKgCo2e:
+          $ref: '#/components/schemas/DecimalString'
+        matchesOriginal:
+          type: boolean
+      examples:
+      - calculation: *id002
+        differenceKgCo2e: '0'
+        matchesOriginal: true
+    ComparisonStatus:
+      type: string
+      enum:
+      - ok
+      - insufficient_sample
+      - zero_median
+    FacilitySummary:
+      type: object
+      additionalProperties: false
+      required:
+      - facility
+      - rankingPosition
+      - deviationPercentage
+      - isOutlier
+      properties:
+        facility:
+          $ref: '#/components/schemas/FacilityResult'
+        rankingPosition:
+          anyOf:
+          - type: integer
+            minimum: 1
+          - type: 'null'
+        deviationPercentage:
+          anyOf:
+          - $ref: '#/components/schemas/DecimalString'
+          - type: 'null'
+        isOutlier:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+    NetworkSummary:
+      type: object
+      additionalProperties: false
+      required:
+      - calculationId
+      - period
+      - scope1KgCo2e
+      - scope2KgCo2e
+      - totalKgCo2e
+      - displayTotalKgCo2e
+      - displaySumFacilitiesKgCo2e
+      - displayRoundingDifferenceKgCo2e
+      - eligibleFacilityCount
+      - medianKgCo2e
+      - comparisonStatus
+      - items
+      - nextCursor
+      properties:
+        calculationId:
+          type: string
+        period:
+          $ref: '#/components/schemas/Period'
+        scope1KgCo2e:
+          $ref: '#/components/schemas/QuantityString'
+        scope2KgCo2e:
+          $ref: '#/components/schemas/QuantityString'
+        totalKgCo2e:
+          $ref: '#/components/schemas/QuantityString'
+        displayTotalKgCo2e:
+          $ref: '#/components/schemas/QuantityString'
+        displaySumFacilitiesKgCo2e:
+          $ref: '#/components/schemas/QuantityString'
+        displayRoundingDifferenceKgCo2e:
+          $ref: '#/components/schemas/DecimalString'
+        eligibleFacilityCount:
+          type: integer
+          minimum: 0
+        medianKgCo2e:
+          anyOf:
+          - $ref: '#/components/schemas/QuantityString'
+          - type: 'null'
+        comparisonStatus:
+          $ref: '#/components/schemas/ComparisonStatus'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacilitySummary'
+        nextCursor:
+          anyOf:
+          - type: string
+          - type: 'null'
+      examples:
+      - calculationId: calc-A
+        period: 2026-10
+        scope1KgCo2e: '0'
+        scope2KgCo2e: '50'
+        totalKgCo2e: '50'
+        displayTotalKgCo2e: '50.000'
+        displaySumFacilitiesKgCo2e: '50.000'
+        displayRoundingDifferenceKgCo2e: '0.000'
+        eligibleFacilityCount: 1
+        medianKgCo2e: '50'
+        comparisonStatus: insufficient_sample
+        items:
+        - facility: *id003
+          rankingPosition: 1
+          deviationPercentage: null
+          isOutlier: null
+        nextCursor: null
+    Outlier:
+      type: object
+      additionalProperties: false
+      required:
+      - facilityId
+      - emissionKgCo2e
+      - deviationPercentage
+      properties:
+        facilityId:
+          type: string
+        emissionKgCo2e:
+          $ref: '#/components/schemas/QuantityString'
+        deviationPercentage:
+          $ref: '#/components/schemas/DecimalString'
+    OutlierAnalysis:
+      type: object
+      additionalProperties: false
+      required:
+      - calculationId
+      - status
+      - eligibleFacilityCount
+      - medianKgCo2e
+      - thresholdPercentage
+      - items
+      - nextCursor
+      properties:
+        calculationId:
+          type: string
+        status:
+          $ref: '#/components/schemas/ComparisonStatus'
+        eligibleFacilityCount:
+          type: integer
+          minimum: 0
+        medianKgCo2e:
+          anyOf:
+          - $ref: '#/components/schemas/QuantityString'
+          - type: 'null'
+        thresholdPercentage:
+          type: string
+          const: '50'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Outlier'
+        nextCursor:
+          anyOf:
+          - type: string
+          - type: 'null'
+      examples:
+      - calculationId: calc-demo
+        status: ok
+        eligibleFacilityCount: 3
+        medianKgCo2e: '100'
+        thresholdPercentage: '50'
+        items:
+        - facilityId: fac-3
+          emissionKgCo2e: '200'
+          deviationPercentage: '100'
+        nextCursor: null
+    ReportRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - calculationId
+      - format
+      properties:
+        calculationId:
+          type: string
+        format:
+          type: string
+          enum:
+          - pdf
+          - csv
+      examples:
+      - calculationId: calc-A
+        format: pdf
+    ErrorProblem:
+      type: object
+      additionalProperties: false
+      required:
+      - title
+      - status
+      - detail
+      - code
+      properties:
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        code:
+          type: string
+    Health:
+      type: object
+      additionalProperties: false
+      required:
+      - status
+      properties:
+        status:
+          type: string
+          enum:
+          - ok
+      examples:
+      - status: ok
+    FacilityPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextCursor
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Facility'
+        nextCursor:
+          anyOf:
+          - type: string
+          - type: 'null'
+    ActivityRecordPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextCursor
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityRecord'
+        nextCursor:
+          anyOf:
+          - type: string
+          - type: 'null'
+    ActivityRevisionPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextCursor
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityRevision'
+        nextCursor:
+          anyOf:
+          - type: string
+          - type: 'null'
+    FactorVersionPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextCursor
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FactorVersion'
+        nextCursor:
+          anyOf:
+          - type: string
+          - type: 'null'
+    CalculationPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - nextCursor
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Calculation'
+        nextCursor:
+          anyOf:
+          - type: string
+          - type: 'null'
+    EmissionSourceList:
+      type: array
+      maxItems: 4
+      items:
+        $ref: '#/components/schemas/EmissionSource'
+      description: Catálogo vinculado limitado aos quatro tipos; incluir inativas para consulta.
+    SourceCatalog:
+      type: array
+      minItems: 4
+      maxItems: 4
+      items:
+        $ref: '#/components/schemas/SourceCatalogEntry'
+      examples:
+      - - type: electricity
+          scope: '2'
+          baseUnit: kWh
+          acceptedUnits:
+          - kWh
+          - MWh
+        - type: diesel
+          scope: '1'
+          baseUnit: L
+          acceptedUnits:
+          - L
+        - type: gasoline
+          scope: '1'
+          baseUnit: L
+          acceptedUnits:
+          - L
+        - type: lpg
+          scope: '1'
+          baseUnit: kg
+          acceptedUnits:
+          - kg
   responses:
-    UnprocessableEntity:
-      description: Erro de validação dos dados enviados
+    Error401:
+      description: Token ausente, inválido ou expirado
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ErrorProblem'
-          examples:
-            erro_validacao:
-              summary: Erro 422 de validação
-              value:
-                type: "https://api.carbontrace.com/errors/validation"
-                title: "Unprocessable Entity"
-                status: 422
-                detail: "A requisição contém parâmetros inválidos."
-                code: "VALIDATION_ERROR"
-                traceId: "tr_123456"
-                errors:
-                  - field: "quantity"
-                    message: "A quantidade deve ser um número decimal válido como string."
-    Unauthorized:
-      description: Token em falta ou inválido
-    NotFound:
-      description: Recurso não encontrado
-    Conflict:
-      description: Conflito de estado ou idempotência violada
-
-security:
-  - bearerAuth: []
+          example:
+            title: Token ausente, inválido ou expirado
+            status: 401
+            detail: Token ausente, inválido ou expirado
+            code: ERROR_401
+    Error403:
+      description: Sem tenant ou papel funcionario admitido
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ErrorProblem'
+          example:
+            title: Sem tenant ou papel funcionario admitido
+            status: 403
+            detail: Sem tenant ou papel funcionario admitido
+            code: ERROR_403
+    Error404:
+      description: Recurso não encontrado ou de outra empresa
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ErrorProblem'
+          example:
+            title: Recurso não encontrado ou de outra empresa
+            status: 404
+            detail: Recurso não encontrado ou de outra empresa
+            code: ERROR_404
+    Error409:
+      description: Duplicidade, revisão-base ou chave idempotente em conflito
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ErrorProblem'
+          example:
+            title: Duplicidade, revisão-base ou chave idempotente em conflito
+            status: 409
+            detail: Duplicidade, revisão-base ou chave idempotente em conflito
+            code: ERROR_409
+    Error422:
+      description: Validação, precisão ou compatibilidade de dados/fator
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ErrorProblem'
+          example:
+            title: Validação, precisão ou compatibilidade de dados/fator
+            status: 422
+            detail: Validação, precisão ou compatibilidade de dados/fator
+            code: ERROR_422

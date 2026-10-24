@@ -1,22 +1,18 @@
-# ADR-003: Persistência
+# ADR-003 — Persistência
 
 ## Status
-Proposto (16/10/2026) - Autor: Tech Lead (Grupo 05)
-
-## Contexto
-A base de dados necessita suportar isolamento *multi-tenant*, integridade de auditoria e garantir exatidão absoluta nos valores dos fatores de emissão e resultados. Contudo, o Firestore (sugerido por defeito) não possui um tipo numérico exato, operando apenas com pontos flutuantes ou inteiros de 64 bits.
+Revisado em 23/10/2026 pelo [ADR-008](ADR-008-recorte-crud.md). Substitui fechamento obrigatório, materialização periódica e Storage obrigatório.
 
 ## Decisão
-Vamos usar o **Firestore** particionado logicamente pelo `tenantId` nos documentos raiz. Coleções críticas (fatores, registos de atividade, cálculos e eventos de auditoria) operarão no modelo *append-only* (apenas inserção). As regras de segurança impedirão atualizações (`update`) ou exclusões (`delete`).
+Firestore com dados por tenant, mantendo isolamento na API. Referências/valores decimais como strings. Fatores publicados, revisões de consumos e snapshots de cálculo são imutáveis; ponteiros de revisão corrente e metadados de unidade/fonte podem ser atualizados em transação.
 
-Para contornar a limitação de tipos do Firestore, **todos os decimais exatos serão armazenados como *strings* canónicas** (ex: `"145.678"`, sem notação científica). A aplicação converterá estas *strings* para o tipo nativo `decimal` em memória antes de qualquer agregação ou operação matemática. Os agregados do *dashboard* serão materializados periodicamente a partir dos cálculos originais reconstruíveis. Ficheiros (PDF/CSV) ficarão no Cloud Storage com URLs assinados de curta duração.
+Lançamento lógico identificado por unidade/fonte/competência. Correção/cancelamento cria revisão com número, referência anterior, UID, instante e motivo. Revisão-base evita perda concorrente. Não marcar a revisão antiga por atualização destrutiva; seu encadeamento e ponteiro corrente identificam a vigente. Cancelamento não libera a chave para outro lançamento nem oferece reativação neste MVP.
 
-Alternativas descartadas:
-- **Cloud SQL (PostgreSQL):** Rejeitada. Suporta nativamente o tipo `NUMERIC`, ideal para o caso, mas o custo da instância mais pequena excede imediatamente os US$ 8 mensais.
-- **Firestore armazenando valores como inteiros escalados:** Rejeitada. Obriga a aplicação a gerir casas decimais variáveis de acordo com o fator, aumentando o risco de erro face à conversão automática do tipo `decimal` em Python a partir de *strings*.
+Desativar unidade/fonte não apaga histórico ou cancela entradas. Snapshots contêm configuração esperada de fontes, revisões, conversões, fatores, metodologia, valores exatos, autor/data. Selecionar anterior não consulta estado corrente. Somente um conjunto de revisões entra em cada total.
 
-## Consequências
-- **Fica mais fácil:** Manter o custo da base de dados próximo de zero (escalão gratuito do Firestore).
-- **Fica mais difícil:** Fazer agregações nativas (`SUM()` no Firestore) via queries diretas. Tudo o que necessite de soma exata terá de ser processado em memória na API ou através de transações que guardam o total precalculado como *string*.
-- **Riscos e mitigação:** Corrupção silenciosa de decimais em escritas manuais. Mitigado proibindo escrita direta; a API é o único meio e aplicará a formatação padrão da *string*.
-- **Gatilho de revisão:** Se a dimensão dos dados de agregação tornar as consultas diárias e o processamento em memória pesados ou dispendiosos.
+PDF/CSV gerados síncronos do mesmo snapshot, sem armazenar arquivos de forma permanente. Sem serviço separado de auditoria: revisões/snapshots ligados fornecem a trilha mínima.
+
+## Consequências e controles
+Consultas paginadas e filtradas, sem stream irrestrito ou listeners amplos sem justificativa. Agregação decimal na API, a partir do recorte completo, não apenas de uma página da interface. Total/mediana armazenados no snapshot evitam recomputação por página.
+
+A implementação define índices e limites operacionais e registra leituras/custos. Testar transações, revisões, cancelamentos, isolamento e ausência de duplicação. No Firestore cliente, deny-all; a imutabilidade via Admin SDK é responsabilidade testada da API.

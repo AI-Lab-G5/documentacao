@@ -1,30 +1,38 @@
-# Definition of Done (DoD) - CarbonTrace
+# Definition of Done — CarbonTrace
 
-Esta lista define as condições obrigatórias para que qualquer tarefa, história ou Pull Request (PR) seja considerada concluída e pronta para mesclar na *branch* principal.
+23/10/2026 · [ADR-008](adr/ADR-008-recorte-crud.md). Aplicar o tipo de evidência à entrega; não confundir planejamento, documentação, implementação e homologação.
 
-### Itens Obrigatórios (Caderno)
-- [ ] **PR revisado por alguém diferente do autor e CI verde**
-  - *Como verificar:* Interface do GitHub na página do PR bloqueará o *merge* caso as regras de proteção de *branch* não tenham sido satisfeitas.
-- [ ] **teste novo ligado a um critério de aceite**
-  - *Como verificar:* O revisor lê o corpo do teste (ex: `test_calculo_idempotente()`) e confirma se mapeia um critério escrito no ticket Jira/GitHub Issue referenciado.
-- [ ] **nenhum segredo (senha, chave) no código**
-  - *Como verificar:* O job de CI `secrets-scan` (ex: TruffleHog/Gitleaks) não deteta chaves do GCP ou Firebase. O revisor faz duplo *check*.
-- [ ] **telas com estados de carregando, vazio e erro**
-  - *Como verificar:* Autor anexa os três *prints* (ou GIFs) da interface (React) no descritivo do PR.
-- [ ] **logs sem dados pessoais**
-  - *Como verificar:* O revisor confirma que nenhum campo identificável (nome, e-mail) foi incluído nas chamadas `logger.info()` no código.
-- [ ] **nenhum recurso novo no GCP sem ADR ou aprovação do Tech Lead**
-  - *Como verificar:* O revisor avalia se o código instancia novos serviços ou se as infraestruturas (ex: Cloud Storage) já estão catalogadas num ADR vigente.
+## Toda entrega
 
-### Itens Específicos do Projeto (Arquitetura)
-- [ ] **Contrato OpenAPI atualizado no mesmo PR**
-  - *Como verificar:* Se a PR toca num *endpoint*, o ficheiro `docs/api/openapi.yaml` foi atualizado e o lint do Redocly passa no CI.
-- [ ] **Nenhum uso de `float` ou `double` para quantidades, fatores ou emissões**
-  - *Como verificar:* CI (lint estático) ou revisor procuram por conversões literais (`float()`, tipos de TS `number`) que quebrem o ADR-007.
-- [ ] **Isolamento de tenants testado**
-  - *Como verificar:* Novos *endpoints* têm um teste unitário/integração validando rejeição/falta de dados caso o `tenantId` do JWT difira dos dados alojados no Firestore (ADR-002).
-- [ ] **Gravação de trilha de auditoria para ações de mutação**
-  - *Como verificar:* Operações de `POST` e `PATCH` despacham um evento correspondente na coleção/tabela de `audit_events`.
+- [ ] Issue/critério de aceite identificados, sem declarar funções removidas como obrigatórias.
+- [ ] PR revisado por outra pessoa e verificações reais executadas; CI/resultado vinculados.
+- [ ] Documentação e matriz requisito → aceite → teste → resultado atualizadas.
+- [ ] Sem segredos ou dados pessoais em logs; não alegar ferramenta de varredura executada se houver apenas TODO no CI.
+- [ ] Nenhum recurso novo de nuvem sem justificativa/ADR; custo acompanhado.
+- [ ] Falhas, testes pulados e dependências explicitados; nenhum caso não executado marcado como aprovado.
 
-### Exceções
-Se um item desta lista não for aplicável ao contexto da tarefa (ex: "telas com estados" numa PR apenas de backend), o autor assinala o *checkbox*, mas adiciona a justificação "N/A: [Motivo]" à frente, cabendo ao revisor concordar ou rejeitar a exceção. Referenciado em: `README.md` e `.github/pull_request_template.md`.
+## Alteração somente documental
+
+- [ ] Visão, backlog/IDs, ADRs, exemplos e contrato-alvo coerentes.
+- [ ] OpenAPI lintada e referências/exemplos validados quando alterados.
+- [ ] Links internos e cinco jornadas conferidos; itens adiados explicitamente rotulados.
+- [ ] Estado planejado separado do implementado; mudança documental não encerra automaticamente issue de software.
+- [ ] Workflow/CODEOWNERS e código do CarbonTrace preservados nesta revisão de escopo.
+
+## Implementação, quando aplicável
+
+- [ ] Testes relevantes ligados ao aceite, incluindo contrato e EP/BVA; ambiente, versão e comandos reproduzíveis.
+- [ ] UI com carregando, vazio, erro e sucesso; confirmação de cancelamento e aviso de limites.
+- [ ] API autoriza tenant/papel funcionario em cada rota; testes de token e acesso indevido; Firestore direto deny-all.
+- [ ] Decimal/strings para domínio, ROUND_HALF_EVEN e nenhuma soma de páginas como total da rede.
+- [ ] Revisões/snapshots preservados; correção/cancelamento idempotentes e origem consultável.
+- [ ] Fatores versionados/preliminares corretamente identificados e recálculo histórico consistente.
+- [ ] Queries paginadas/controladas; sem listeners amplos sem justificativa.
+- [ ] J5, quando implementada, exporta PDF/CSV do mesmo snapshot e documenta origem/pendências.
+- [ ] Metas do caderno verificadas nos marcos aplicáveis; alterações dependem do tutor.
+
+## N/A e aceite
+
+Marcar item não aplicável com justificativa N/A e revisão explícita. N/A não substitui falha ou teste pulado. Nesta revisão documental não se exige fingir implementação/teste de quatro papéis, aprovação ou fechamento, que foram adiados.
+
+A revisão do produto foi aprovada pelo responsável; o gate depende de evidências e do processo com o tutor. O CI existente possui TODOs e não prova sozinho segurança ou testes da aplicação.

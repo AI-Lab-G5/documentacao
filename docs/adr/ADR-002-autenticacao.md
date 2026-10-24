@@ -1,23 +1,16 @@
-# ADR-002: Autenticação e autorização
+# ADR-002 — Autenticação e autorização
 
 ## Status
-Proposto (16/10/2026) - Autor: Tech Lead (Grupo 05)
-
-## Contexto
-O CarbonTrace é uma aplicação *multi-tenant* focada em empresas B2B. O sistema não permite registo público; os utilizadores são convidados. Para efeitos de auditoria e RGPD/LGPD, são guardados dados mínimos (nome, e-mail corporativo, cargo). O isolamento dos dados entre os clientes (*tenants*) é o pilar da segurança da plataforma. O orçamento estrito (US$ 3–8) inviabiliza soluções empresariais dispendiosas.
+Revisado em 23/10/2026; [ADR-008](ADR-008-recorte-crud.md) substitui os quatro papéis anteriores.
 
 ## Decisão
-Vamos usar o **Firebase Authentication** padrão (modo *single project*) gerindo o *multi-tenancy* através de **Custom Claims**. O token JWT de cada utilizador conterá o `tenantId` e o `role` (papel). A API validará o token em cada pedido e extrairá o `tenantId` exclusivamente deste token, nunca do corpo ou via de acesso (*path*).
+Firebase Authentication com login individual; um único papel admitido: funcionario. Provisionamento pela equipe, sem cadastro público ou tela de usuários. Claims assinadas: tenant_id e papel=funcionario. Resposta /me usa tenantId/role por convenção do contrato.
 
-Os dados pessoais mínimos serão armazenados no Firestore numa coleção separada e encriptada (criptografia em repouso do GCP), retidos apenas enquanto o contrato durar. A trilha de auditoria referenciará apenas o ID único (UID) do autor.
+A API verifica token e deriva tenant exclusivamente da identidade, nunca de path/query/body. Funcionário acessa todas as unidades do próprio tenant; não há restrição individual por unidade. Tenant ausente/papel não admitido →403; token ausente/inválido/expirado →401; recurso de outro tenant →404 sem revelar existência.
 
-Papéis de RBAC estabelecidos: `admin_esg`, `analista_controladoria`, `operador_unidade`, `auditor`.
+Firestore direto deny-all para todos os clientes. Admin SDK ignora Rules, portanto a API precisa de autorização em cada rota, inclusive relatórios, históricos e snapshots. Tokens/cabeçalhos debug não substituem a autenticação no modo demonstrado e na nuvem.
 
-Alternativas descartadas:
-- **Google Cloud Identity Platform (Multi-tenancy nativo):** Rejeitada. Acarreta custos fixos e complexidade adicional que ultrapassam o orçamento de US$ 3–8.
+## Validação
+Testar duas empresas, contas individuais, IDs de outra empresa, troca de parâmetros e papel não admitido. Contas do mesmo tenant têm permissões iguais; não testar bloqueio entre suas unidades como se esse comportamento ainda fosse obrigatório.
 
-## Consequências
-- **Fica mais fácil:** O emulador do Firebase Auth permite testes locais fluentes, sem custos ou criação de projetos na nuvem.
-- **Fica mais difícil:** A revogação ou alteração imediata de privilégios, visto que os *custom claims* propagam-se apenas quando o token é renovado (até 1 hora).
-- **Riscos e mitigação:** Exposição de dados de um *tenant* a outro. Mitigado forçando a injeção do `tenantId` no contexto da requisição na camada de *middleware* da API, antes da lógica de negócio.
-- **Gatilho de revisão:** Se a plataforma precisar de suportar SSO (Single Sign-On) federado (SAML/OIDC) por cliente corporativo no futuro.
+Em desenvolvimento validar ID tokens do Auth Emulator; fora dele, tokens Firebase válidos. Dados pessoais mínimos, UID nas trilhas, logs sem nome/e-mail. Retenção/base legal com dados reais exige validação própria; não declarar conformidade jurídica já verificada.

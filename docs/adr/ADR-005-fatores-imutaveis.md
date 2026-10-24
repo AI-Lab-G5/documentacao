@@ -1,20 +1,16 @@
-# ADR-005: Versionamento imutável de fatores e metodologia
+# ADR-005 — Fatores imutáveis e reprodução
 
 ## Status
-Proposto (16/10/2026) - Autor: Tech Lead (Grupo 05)
-
-## Contexto
-Empresas sofrem com a instabilidade de planilhas. Para evitar *greenwashing*, o cálculo do período "X" auditado deve permanecer estático. Metodologias (regras de cálculo) e fatores (valores GWP) mudam com o tempo e requerem um rasto histórico inquebrável.
+Revisado em 23/10/2026; [ADR-008](ADR-008-recorte-crud.md) remove publicação pela aplicação, hashes e fluxo de fechamento.
 
 ## Decisão
-Vamos aplicar um **padrão de versionamento e imutabilidade estrita**. Versões publicadas de fatores ou metodologias não possuem operações de `UPDATE` ou `DELETE` na API. Qualquer correção resulta na publicação de uma nova versão (ex: `v1.2` substitui a anterior, que passa ao estado *obsoleto* mas permanece na base de dados para cálculo retroativo de registos que a utilizaram).
-O conteúdo terá um *hash* armazenado para atestar que os dados não foram modificados no banco de forma ilegal. A fixação é automática: cada cálculo regista qual foi a versão exata do fator aplicada. A substituição desta versão num período já fechado exige privilégios administrativos, originando obrigatoriamente um evento na trilha de auditoria.
+Equipe prepara conjuntos A/B imutáveis e metodologia fixa identificada. A aplicação só lê versões e fatores. Sem endpoint de publicar/editar/excluir fator e sem escolha de GWP. Fator agregado documenta referência, fonte, escopo, unidade, vigência, premissas e status preliminary/verified; sem inferir conferência a partir da presença de um link.
 
-Alternativas descartadas:
-- **Atualização na mesma entidade com coluna de "data de validade":** Rejeitada. Quebra o princípio da imutabilidade do modelo *append-only* no Firestore e compromete auditorias.
+Nova execução seleciona versão compatível mais recente vigente na competência; não haver versão gera 422. Conjuntos inválidos são rejeitados no procedimento de carga da equipe. Apenas eletricidade, diesel, gasolina e GLP compõem o catálogo.
 
-## Consequências
-- **Fica mais fácil:** Comprovar a entidades auditoras a origem matemática de cada cálculo emitido num PDF do ano anterior.
-- **Fica mais difícil:** A estrutura da base de dados cresce continuamente, uma vez que nenhum registo obsoleto é apagado fisicamente.
-- **Riscos e mitigação:** Crescimento dos custos de leitura por indexação de várias versões. Mitigado indexando preferencialmente as versões "ativas/padrão".
-- **Gatilho de revisão:** Se o limite de armazenamento ou as consultas de catalogação ficarem demasiado lentas devido ao volume histórico.
+Snapshot preserva referências e valores dos fatores, entradas/revisões e metodologia. Recalcular A usa A mesmo após B, correção ou cancelamento. Para atualizar o corrente, criar novo snapshot, sem modificar o anterior. Não exigir hash para provar isso; usar referências imutáveis, resultados e testes.
+
+## Limites
+GWP/tratamento ambiental são premissas fixas do fator agregado e metodologia, sem motor por gás. Distinguir estimativa reduzida de inventário homologado. Usar dados sintéticos identificados nos testes; apresentar fatores reais como verificados somente após conferência de fonte/condições de uso.
+
+Risco: editar dados com Admin SDK. Mitigar por procedimento de carga somente-inserção, validação e testes de imutabilidade; Rules deny-all sozinhas não protegem Admin SDK.

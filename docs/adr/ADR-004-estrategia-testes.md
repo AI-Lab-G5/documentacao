@@ -1,24 +1,18 @@
-# ADR-004: Estratégia de testes
+# ADR-004 — Estratégia de testes
 
 ## Status
-Proposto (16/10/2026) - Autor: Tech Lead (Grupo 05)
-
-## Contexto
-A defensibilidade do produto baseia-se na confiança dos números para auditorias de carbono. A equipa necessita de garantir isolamento de *tenants*, consistência em recálculos (o mesmo fator deve produzir o mesmo resultado anos depois) e a estabilidade do contrato OpenAPI.
+Revisado em 23/10/2026 pelo [ADR-008](ADR-008-recorte-crud.md).
 
 ## Decisão
-Vamos adotar uma estratégia de testes baseada em três pilares, integrados no CI do GitHub Actions:
-1. **Testes Unitários e de Propriedade:** Usando a biblioteca Hypothesis (Python) para injetar combinações de conversão de unidades e operações decimais, garantindo que não ocorrem perdas de precisão ou inversões.
-2. **Testes de Contrato:** Validação automática do código contra o ficheiro OpenAPI v0.1 para confirmar a conformidade de *endpoints*, tipos e rotas.
-3. **Testes de Ouro (*Golden Tests*) e Integração:** Usando os emuladores do Firebase. Incluirão testes com dados estáticos que garantem o desafio de engenharia: recalcular um período histórico com a versão do fator original devolverá exatamente o mesmo resultado numérico *byte a byte*.
+Priorizar testes de negócio/contrato/integração com emuladores e smoke de interface das jornadas. Ligar cada caso ao critério de aceite e registrar comando, ambiente, versão, resultado e CI.
 
-Todos os novos testes devem estar explicitamente ligados a um critério de aceitação do Definition of Done (DoD).
+Cobrir Decimal, conversão kWh/MWh, zero/negativos/ausentes, duplicidade/idempotência, revisão-base concorrente, correção/cancelamento e fatores A/B. Provar diferença zero em 100 recálculos do snapshot original e consistência dos agregados em 1.000 cenários com semente. Testar mediana, limite ±50%, zeros/amostra insuficiente e unidades incompletas.
 
-Alternativas descartadas:
-- **Testes E2E complexos com Selenium/Cypress em CI:** Rejeitada. Aumentaria o tempo de *build* e manutenção na fase de MVP para uma equipa académica, dando prioridade à integridade da API backend.
+Autorização em todas as rotas com token ausente/inválido/expirado, papel sem permissão, tenant incorreto e acesso direto Firestore deny-all. Mesmo tenant tem acesso a todas as próprias unidades, sem matriz de quatro perfis.
 
-## Consequências
-- **Fica mais fácil:** Detetar regressões no cálculo exato das emissões antes do código chegar à *branch main*.
-- **Fica mais difícil:** Manter a suite de testes de ouro quando uma nova metodologia legal altera retroativamente o modelo estrutural.
-- **Riscos e mitigação:** Falsos positivos nos testes de isolamento de *tenants*. Mitigado através da obrigatoriedade de simulação rigorosa de diferentes tokens JWT (utilizadores A e B) nos testes de integração do emulador.
-- **Gatilho de revisão:** Queda na cobertura de testes dos módulos de cálculo central abaixo dos 90%.
+Validar respostas contra OpenAPI-alvo 0.2.0 quando a API for adaptada. Documentação validada não significa testes de contrato da aplicação executados. Teste pulado não conta como aprovado. EP/BVA e relatório no CP2; J5 inclui concordância PDF/CSV do mesmo snapshot até o Demo Day.
+
+## Exigências externas e limites
+Preservar metas do caderno nos marcos aplicáveis: domínio ≥80%, global ≥60%, Lighthouse ≥90, p95 leitura ≤800ms/escrita ≤1,5s, segurança, rollback e demais evidências. Não reduzir por decisão unilateral de produto.
+
+Hipóteses comerciais não são provadas por teste de software. Não exigir testes de aprovação/fechamento/auditor, agora adiados. O workflow existente possui TODOs; CI verde em placeholder não comprova execução real. Esta revisão não altera workflow.

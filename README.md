@@ -1,51 +1,47 @@
-# Documentação - CarbonTrace
+# CarbonTrace — documentação do MVP
 
-Repositório central de documentação e especificações do projeto **CarbonTrace**, plataforma de gestão de emissões de GEE (Gases de Efeito Estufa - Escopos 1 e 2) voltada para redes de varejo e franquias.
+Grupo 05 · Revisão de escopo de **23/10/2026**. O CRUD de consumos é a base, preservando cinco jornadas: unidades/fontes, coleta, cálculo versionado, dashboard da rede e PDF/CSV rastreável.
 
----
+**Este repositório descreve o comportamento-alvo, não comprova implementação.** A OpenAPI 0.2.0 é planejada. A API e o frontend de [CarbonTrace](https://github.com/AI-Lab-G5/CarbonTrace) precisam ser adaptados e testados. Esta revisão não modifica código, configuração ou contrato gerado naquele repositório.
 
-## Estrutura da Documentação
+## Leitura recomendada
 
-A documentação do projeto está estruturada nas seguintes pastas e arquivos com os caminhos atualizados:
+- [ADR-008 — decisão formal e cortes](docs/adr/ADR-008-recorte-crud.md).
+- [Visão do produto](docs/visao-de-produto.md).
+- [Backlog MoSCoW e correspondência dos IDs](docs/backlog/MoSCoW.md).
+- [Matriz de rastreabilidade planejada](docs/backlog/rastreabilidade.md): casos e resultados ainda pendentes.
+- [Validação do problema e demonstração](docs/validacao/validacao-problema-e-defensibilidade.md).
+- [Índice das decisões arquiteturais](docs/adr/README.md).
+- [Guia da API](docs/api/README.md) e [OpenAPI 0.2.0](docs/api/openapi.yaml).
+- [Definition of Done](docs/definition-of-done.md) e [template de PR](.github/pull_request_template.md).
 
-### 1. Produto e Negócio
-- [Visão do Produto](docs/visao-de-produto.md): Contexto de negócio, personas, análise de causa raiz (Diagrama de Ishikawa), jornadas do utilizador e requisitos.
-- [Validação do Problema e Defensibilidade](docs/validacao/validacao-problema-e-defensibilidade.md): Hipóteses de validação, dados de mercado (CDP) e estratégia de defensibilidade.
+## Recorte aprovado
 
-### 2. Backlog e Qualidade
-- [Backlog MoSCoW e Critérios de Aceite](docs/backlog/MoSCoW.md): Requisitos priorizados pelo método MoSCoW com histórias de utilizador e critérios de aceite mensuráveis.
-- [Definition of Done (DoD)](docs/definition-of-done.md): Lista de verificação e condições obrigatórias para que qualquer tarefa ou Pull Request seja considerada concluída.
+Um perfil funcional, **funcionário responsável pela coleta**, com login individual e acesso às unidades da própria empresa. ESG/controladoria continuam como público comprador, sem perfis separados. Contas e fatores são preparados pela equipe, sem telas de administração.
 
-### 3. Arquitetura e Decisões Técnicas
-- [Registos de Decisão de Arquitetura (ADR)](docs/adr/README.md): Índice das decisões arquiteturais adotadas:
-  - [ADR-001: Stack principal](docs/adr/ADR-001-stack-principal.md)
-  - [ADR-002: Autenticação e autorização](docs/adr/ADR-002-autenticacao.md)
-  - [ADR-003: Persistência](docs/adr/ADR-003-persistencias.md)
-  - [ADR-004: Estratégia de testes](docs/adr/ADR-004-estrategia-testes.md)
-  - [ADR-005: Versionamento imutável de fatores](docs/adr/ADR-005-fatores-imutaveis.md)
-  - [ADR-006: Idempotência e identificação](docs/adr/ADR-006-idempotencia.md)
-  - [ADR-007: Aritmética decimal](docs/adr/ADR-007-arimetica-decimal.md)
+Fontes: eletricidade, diesel, gasolina e GLP. Correção cria revisão; exclusão significa cancelamento lógico. Preservam-se fatores/cálculos imutáveis, conversões delimitadas, precisão decimal, ranking/mediana e exportações consistentes.
 
-### 4. API e Contratos
-- [Documentação da API](docs/api/README.md): Visão geral dos contratos, resumo das jornadas (J1 a J5), perfis de acesso (RBAC) e instruções de validação local.
-- [Contrato OpenAPI](docs/api/openapi.yaml): Especificação OpenAPI 3.1.0 com todos os endpoints, esquemas de dados e exemplos de requisição/resposta.
+Fora do MVP: aprovação segregada, fechamento/reabertura, quatro perfis, auditor convidado, refrigerantes, intensidade por área, auditoria criptográfica, Escopo 3, OCR, integrações, certificação e créditos de carbono.
 
-### 5. Configuração e Governança
-- [Pipeline de CI](.github/workflows/ci.yml): Automação no GitHub Actions para verificações de segredos, formatação (*lint*), testes e *build*.
-- [Template de Pull Request](.github/pull_request_template.md): Modelo padronizado para submissão e revisão de alterações.
-- [CODEOWNERS](.github/CODEOWNERS): Definição de responsabilidades e revisores do repositório.
+## Marcos e evidências
 
----
+| Marco | Entrega planejada |
+| --- | --- |
+| [Sprint 2 — 19 a 25/10](https://github.com/AI-Lab-G5/CarbonTrace/milestone/2) | J1/J2 integradas e base do cálculo; issues #5–#14 |
+| [Sprint 3 — 26/10 a 01/11](https://github.com/AI-Lab-G5/CarbonTrace/milestone/3) | J3/J4, correção/cancelamento e evidências do CP2; issues #15–#24 |
+| Demo Day — 05/12/2026 | Cinco jornadas homologadas, incluindo J5 PDF/CSV |
 
-## Glossário de Termos Úteis
+J5 é obrigatória no MVP, mas não foi adicionada às 20 issues do CP2. Publicar documentos não encerra implementação nem aprova gate. Informar o tutor sobre a revisão; exigências técnicas do caderno permanecem.
 
-- **ADR (Architecture Decision Record):** Registo curto de uma decisão técnica documentando o contexto, o que foi decidido e as suas consequências (ex: "Usaremos Firestore porque...").
-- **OpenAPI:** O contrato da API. É a "ementa do backend para o frontend", listando todos os endpoints, o que cada um recebe e o que devolve, sem conter código de implementação.
-- **Definition of Done (DoD):** A lista de verificação com as condições obrigatórias para que qualquer tarefa ou Pull Request seja considerada pronta e finalizada.
-- **Critério de aceite mensurável:** Regra que dita quando uma história de utilizador está concluída, exigindo um número ou resultado testável (ex: mau: "ser rápido"; bom: "responder em até 800 ms").
-- **Docker Compose:** Um comando (`docker compose up`) que levanta o sistema inteiro (API, frontend e base de dados) no computador de qualquer integrante da equipa, garantindo que o ambiente local é igual para todos.
-- **Emulador Firebase:** Versão local e gratuita do Firebase (Auth e Firestore) utilizada para testar a aplicação sem consumir o orçamento da nuvem.
-- **CI (Continuous Integration):** Verificações automáticas que correm no GitHub a cada Pull Request (PR). Se o código tiver erros de formatação (*lint*) ou os testes falharem, o PR fica "vermelho" e o *merge* é bloqueado.
-- **Tenant:** Cada empresa cliente (rede ou franquia) que utiliza o sistema. Os dados operam em isolamento absoluto: os dados da empresa A nunca podem aparecer ou interferir com os da empresa B.
+GCP + Firebase continuam como base. US$ 3–8 é estimativa, não gasto medido nem garantia. Limites acumulados: CP2 US$ 5; CP3 US$ 12; ciclo US$ 50. A US$ 40, revisar/desligar recursos não críticos. Registrar gasto real, data e evidência.
 
----
+O [workflow existente](.github/workflows/ci.yml) tem etapas TODO; não representa segurança e testes completos. Workflow e CODEOWNERS não são modificados nesta revisão.
+
+## Glossário
+
+- **CT-Mxx:** ID histórico de história originalmente Must; prioridade vigente está no backlog, inclusive para itens adiados.
+- **J1–J5:** jornadas, não perfis.
+- **Tenant:** empresa isolada das demais, determinada pelo token.
+- **Revisão:** nova entrada preservando a anterior após correção/cancelamento.
+- **Snapshot:** conjunto imutável de entradas, configurações, fatores e resultados para reprodução/exportação.
+- **EP/BVA:** particionamento de equivalência e análise de valores-limite.

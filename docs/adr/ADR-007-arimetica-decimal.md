@@ -1,20 +1,16 @@
-# ADR-007: Aritmética decimal e política de arredondamento
+# ADR-007 — Decimal e arredondamento
 
 ## Status
-Proposto (16/10/2026) - Autor: Tech Lead (Grupo 05)
-
-## Contexto
-Valores de emissões dependem de conversões de unidades complexas e múltiplas multiplicações de fatores (ex: conversão de litros de combustível para GJ e, depois, para toneladas de CO2e). O uso de tipos IEEE 754 (*float/double*) introduz dízimas infinitas que corrompem as somas consolidadas da rede num cenário B2B.
+Revisado em 23/10/2026; compatível com [ADR-008](ADR-008-recorte-crud.md). A regra única substitui o ROUND_HALF_UP antes proposto no backlog.
 
 ## Decisão
-Aplica-se o uso estrito e exclusivo do tipo `decimal.Decimal` em toda a lógica de domínio do Python. A política de arredondamento será o modo **`ROUND_HALF_EVEN`** (*Banker's Rounding*, "meio para o par"), ideal para mitigar vieses de arredondamento cumulativo em somatórios estatísticos grandes de várias unidades.
-**Regra temporal:** O arredondamento só é efetuado uma única vez no resultado final, ou quando este é exibido ao utilizador. Intermediações matemáticas mantêm a escala de alta precisão (ex: 12 a 28 casas decimais). Na base de dados e no contrato JSON (API), será usado formato de *string* decimal (`"X.YY"`), com o ponto como separador, mantendo o formato *pt-BR* com vírgulas exclusivamente para renderização na interface visual do utilizador (*frontend*).
+Quantidades, fatores, conversões e emissões usam decimal.Decimal no domínio, criado de strings. JSON e Firestore preservam strings decimais sem notação científica. Frontend não usa Number/parseFloat para calcular ou normalizar valores exatos; contadores e posições de UI podem ser números.
 
-Alternativas descartadas:
-- **Arredondamento em passos intermediários (`ROUND_HALF_UP`):** Rejeitada. Resulta em desvios mensuráveis (*drift*) na soma anual de milhares de transações de pequenas franquias.
+Precisão de trabalho dimensionada para os operandos e a soma, de pelo menos 28 dígitos significativos, com validação para não aceitar dados que excedam a precisão suportada silenciosamente. Evitar arredondamento intermediário por contexto insuficiente. Sem NaN/infinito/negativo para consumo. Quantidade explicitamente zero é válida.
+
+Conversão permitida: MWh×1000→kWh; kWh, L e kg mantêm unidade-base da fonte compatível. Calcular/somar exato antes de apresentar; saída de exibição em 3 casas usando ROUND_HALF_EVEN. Guardar valor não arredondado no snapshot. Diferença entre soma das parcelas exibidas e total exibido deve aparecer.
+
+Exemplo sintético: 0.1234+0.2344=0.3578; exibir parcelas 0.123 e 0.234, total 0.358 e diferença 0.001. Empate 1.2345→1.234; 1.2355→1.236.
 
 ## Consequências
-- **Fica mais fácil:** Garantir que o valor total do grupo empresarial (Dashboard) coincide no último cêntimo/centésimo com a soma matemática dos sub-relatórios individuais.
-- **Fica mais difícil:** O controlo do código exigirá ferramentas automatizadas (ex: *hooks* e verificadores customizados) para sinalizar erro de CI caso um construtor de ponto flutuante `float()` seja encontrado acidentalmente.
-- **Riscos e mitigação:** Erro no processamento manual via *scripts*. Mitigado com um CI/CD que não permite fusão (*merge*) onde tipos nativos de flutuantes existam nas *pipelines* de cálculo.
-- **Gatilho de revisão:** Escala do sistema exigir suporte de precisão para unidades microcósmicas além do normal de mercado (acima de 28 casas decimais).
+Política/metodologia identificadas no snapshot e constantes no recálculo. Classificar alerta >50% antes de arredondar. Strings são contrato, não homologação ambiental. Testar fronteiras, soma e conversão; não proibir floats indiscriminadamente em campos que não são valores de domínio.

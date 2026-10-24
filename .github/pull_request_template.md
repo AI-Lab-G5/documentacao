@@ -1,36 +1,36 @@
-## Resumo
-<!-- Descreva brevemente o que foi feito. -->
+## Problema e resultado
 
-## Referência
-**Issue / História:** #[Número_da_Issue]
-**Critério de aceite atendido:** <!-- Escreva ou copie o critério específico -->
+<!-- Explique a mudança e seu efeito. Diferencie comportamento planejado de implementado. -->
 
-## Tipo de Mudança
-- [ ] Nova funcionalidade (Feature)
-- [ ] Correção de erro (Bugfix)
-- [ ] Refatoração ou ajuste técnico
-- [ ] Documentação
+## Referências
 
-## Como testar
-<!-- Descreva o passo a passo para o revisor rodar localmente e confirmar o funcionamento -->
+**Issue:** <!-- URL completa quando for de outro repositório -->
+**Histórias/critérios:** <!-- CT-Mxx e critérios específicos -->
+**Decisão de escopo:** ADR-008 (perfil único, cinco jornadas).
 
-## Impacto Arquitetural
-- [ ] Novo recurso no GCP? (Se sim, cite o ADR de aprovação: ____ )
-- [ ] O contrato OpenAPI (`docs/api/openapi.yaml`) foi modificado?
+## Tipo
 
-## Validação de Segurança
-- [ ] Nenhum dado pessoal foi exposto nos *logs* de aplicação.
-- [ ] Nenhum segredo/senha *hardcoded* (TruffleHog passou).
+- [ ] Documentação/contrato planejado
+- [ ] Implementação/correção
+- [ ] Ajuste técnico
 
-## UI/UX (Se aplicável)
-<!-- Anexe prints das telas de Sucesso, Carregando, Vazio e Erro -->
+## Validação
 
-## Checklist DoD
-- [ ] PR revisado e CI verde.
-- [ ] Teste novo ligado ao critério de aceite.
-- [ ] Nenhum segredo no código.
-- [ ] Telas com estados (Carregando, Vazio, Erro).
-- [ ] Logs limpos (sem dados pessoais).
-- [ ] Nenhum recurso novo GCP sem ADR/Tech Lead.
-- [ ] Uso exclusivo de decimais exatos (sem float/double em cálculos/fatores).
-- [ ] Teste de isolamento de *tenants* efetuado.
+<!-- Comandos, ambiente, versão, resultados e links reais. Não tratar CI TODO como teste executado. -->
+<!-- Se documental: OpenAPI, exemplos, links, correspondência de IDs e consistência entre documentos. -->
+<!-- Se implementação: teste ligado ao aceite, contratos, EP/BVA e isolamento do tenant. -->
+
+## Checklist
+
+- [ ] PR revisado por outra pessoa e CI/verificações reais vinculadas.
+- [ ] Estado planejado e implementado separados; nenhuma issue encerrada só por documentação.
+- [ ] Cinco jornadas preservadas; aprovação/fechamento/quatro perfis somente como itens adiados.
+- [ ] Sem segredo ou dados pessoais em logs.
+- [ ] API/decimais/revisões/snapshots e rastreabilidade coerentes, quando aplicável.
+- [ ] UI com carregando/vazio/erro/sucesso e confirmação de cancelamento, quando aplicável.
+- [ ] Nenhum novo recurso GCP sem justificativa/ADR e impacto em custos.
+- [ ] Exceções N/A justificadas e aceitas pelo revisor; testes pulados não são aprovados.
+
+## Impacto e limites
+
+<!-- Mudou contrato? Requer adaptação em CarbonTrace? Há funcionalidade do MVP ainda pendente, como J5 após o CP2? -->
