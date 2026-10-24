@@ -1,47 +1,55 @@
-# ADR-008 — CRUD com requisitos originais preservados
+# ADR-008: CRUD com requisitos originais preservados
 
 ## Status
 
-Decisão de produto aprovada pelo responsável do projeto em 23/10/2026. Implementação pendente nas issues; alteração documental não significa aceite técnico nem aprovação do tutor. Revisa parcialmente ADR-001 a ADR-007; não altera a stack.
+Decisão de produto aprovada pelo responsável em 23/10/2026; justificativas ampliadas nesta revisão editorial. Implementação pendente nas issues; documentação não comprova aceite técnico ou aprovação do tutor. Revisa parcialmente ADR-001 a ADR-007 e mantém a stack.
 
-## Contexto e decisão
+## Contexto
 
-A visão anterior ampliou o MVP para quatro perfis, aprovação segregada, fechamento/reabertura e infraestrutura de auditoria. O recorte inicial de CRUD puro retiraria requisitos centrais da proposta. A decisão é preservar cinco jornadas com operação simplificada.
+A proposta original pede coleta por unidade, fatores versionados, consolidação e relatórios rastreáveis. A visão evoluiu para quatro perfis, aprovação segregada, fechamento/reabertura e infraestrutura de auditoria, aumentando telas, permissões, estados e testes para uma equipe com prazo curto.
 
-Usuário único: funcionário responsável pela coleta, login individual, mesmas permissões nas unidades da própria empresa. ESG/controladoria são cliente/interessados, não perfis da aplicação. Provisionamento de contas e fatores pela equipe.
+Reduzir tudo a CRUD puro resolveria a coleta, mas retiraria versionamento, comparação da rede e exportações. O projeto deixaria de demonstrar recalcular com o fator original e comparar unidades com a mediana. A redução precisa atingir a operação, mantendo os requisitos que dão sentido à proposta.
 
-Preservar: J1 unidades/fontes; J2 coleta validada; J3 fatores versionados/cálculo/reprodução; J4 dashboard/ranking/mediana; J5 PDF/CSV rastreável. Fontes: eletricidade, diesel, gasolina, GLP. Conversão kWh/MWh, demais em L/L/kg. Decimal, strings e ROUND_HALF_EVEN em 3 casas.
+O usuário operacional é o funcionário que coleta dados; ESG/controladoria podem continuar como comprador/interessados sem exigir perfis diferentes no software. CRUD, precisão e rastreabilidade precisam formar um fluxo completo, sem se confundir com certificação ou inventário homologado.
 
-Correção cria revisão imutável; cancelamento lógico preserva origem e exclui dos totais correntes. Unidade/fonte são desativadas. Não há DELETE físico. Snapshots guardam entradas, configuração esperada, conversões, fatores, metodologia, resultados, autor/data. B ou correção não modifica snapshot A.
+## Decisão
 
-Ranking absoluto kgCO2e; somente unidades ativas/completas com ≥1 fonte esperada. Desvio absoluto >50% da mediana com ≥3 completas e mediana >0; fora dessas condições, avisar sem classificar. Não usar intensidade por área ou teste estatístico.
+Manter cinco jornadas: J1 unidades/fontes; J2 coleta; J3 cálculo versionado/reprodução; J4 dashboard/ranking/mediana; J5 PDF/CSV rastreável. Um perfil funcionario, login individual e acesso às unidades da própria empresa. Equipe provisiona contas e prepara fatores, sem gestão pela interface.
 
-PDF/CSV síncronos do mesmo snapshot, com revisões/fatores/UID/datas, sem fechamento, jobs, Storage obrigatório ou manifesto. Fatores não conferidos continuam preliminares.
+Fontes: eletricidade, diesel, gasolina e GLP. Conversão kWh/MWh, demais L/L/kg. Decimal, strings e exibição 3 casas ROUND_HALF_EVEN. Correção cria revisão; cancelamento lógico preserva origem e retira do corrente. Snapshots guardam entradas, fontes esperadas, conversões, fatores/metodologia e autor/data; A permanece após B ou correção.
 
-## Cortes explícitos
+Comparação absoluta por kgCO2e, com unidades ativas/completas e ≥1 fonte esperada. Alerta abs(desvio)>50% com ≥3 completas e mediana>0; fora disso, aviso sem classificação. Não alegar eficiência ou teste estatístico.
 
-Fora do MVP: quatro perfis/gestão de permissões; aprovação; fechamento/reabertura; auditor convidado; refrigerantes; intensidade por área/MAD; escolha de GWP; hashes, assinatura ou infraestrutura separada de auditoria. Excluem-se também Escopo 3, OCR, concessionárias, ERP, anexos, certificação, créditos, app nativo e benchmark entre clientes.
+PDF/CSV síncronos do mesmo snapshot, com revisões/fatores/UID/datas, sem fechamento, jobs, Storage obrigatório, assinatura ou manifesto. Fatores não conferidos continuam preliminares. Metodologia fixa explicita os limites dos fatores agregados.
 
-Metodologia fixa registra premissas dos fatores agregados; não prometer inventário completo, homologação metodológica ou diferenciação comercial sem validação. Ishikawa permanece diagnóstico histórico, sem obrigar tratar todas as causas.
+Alternativas descartadas:
+- **Manter integralmente quatro perfis e fechamento:** aumenta o trabalho de fluxos e autorização sem ser indispensável à coleta e à cena original.
+- **CRUD sem versões, rede ou relatórios:** entrega algo menor, mas não preserva as cinco jornadas nem a demonstração solicitada.
+- **Apagar histórico para simplificar:** impede reproduzir o anterior e explicar correções; cancelar logicamente resolve a retirada do corrente.
+- **Manter infraestrutura criptográfica como obrigatória:** confunde a trilha mínima com uma solução de auditoria mais ampla; referências e snapshots bastam ao recorte.
+- **Trocar a stack:** consome capacidade sem resolver a origem da complexidade.
 
-## Correspondência e efeitos
+## Consequências
 
-IDs equivalentes são mantidos com critérios revisados. CT-M06 fica adiada e reservada. CT-S02 avançada fica fora, com comparação básica obrigatória em CT-M12 (novo). CT-M11 (novo) trata cancelamento. Ver [backlog](../backlog/MoSCoW.md).
+- **Fica mais fácil:** Reduzir telas, perfis e transições, reaproveitando código e mantendo a proposta de coleta/cálculo/rede.
+- **Fica mais difícil:** O projeto ainda precisa implementar histórico, fatores/snapshots, comparação e PDF/CSV; não é apenas um formulário e não se garante prazo sem avaliar capacidade.
+- **Riscos e mitigação:** Documentos podem reintroduzir funções adiadas ou afirmar que o alvo está implementado. Usar backlog/IDs, contrato-alvo e matriz, mantendo resultados pendentes até testes/PR/CI reais.
+- **Gatilho de revisão:** Novo requisito de perfil/fonte/metodologia, evidência de adoção incompatível ou capacidade/custo insuficientes. Registrar decisão antes de ampliar o escopo.
 
-Esta decisão prevalece sobre trechos substituídos dos ADRs: quatro papéis em ADR-002, fechamento/Storage em ADR-003, hashes/publicação na API em ADR-005/006 e regras de teste ligadas a aprovação em ADR-004. Conteúdo anterior permanece no histórico Git.
+## Cortes e correspondência
 
-## Entregas e estado real
+Fora do MVP: quatro perfis/gestão de permissões; aprovação; fechamento/reabertura; auditor convidado; refrigerantes; intensidade/MAD; escolha GWP; hashes/assinatura/infraestrutura separada de auditoria. Excluem-se também Escopo 3, OCR, concessionárias, ERP, anexos, certificação, créditos, app nativo e benchmark entre clientes.
 
-Sprint 2 (19–25/10): J1/J2 e fundação do cálculo. Sprint 3 (26/10–01/11): J3/J4, revisões/cancelamentos e gate CP2. J5 é Must até 05/12, mas não foi acrescentada às 20 issues CP2. Preservar responsáveis, estados e milestones; não encerrar issues automaticamente.
+CT-M06 fica adiada e reservada. Comparação básica sai da parte avançada de CT-S02 e passa a CT-M12; cancelamento é CT-M11. IDs equivalentes permanecem, sem reutilização silenciosa. Ver [backlog](../backlog/MoSCoW.md). Textos anteriores continuam no histórico Git.
 
-[OpenAPI 0.2.0](../api/openapi.yaml) é contrato-alvo, diferente do código/contrato gerado atual no repositório CarbonTrace. Esta revisão altera somente documentacao; não implementa produto ou altera código/configuração daquele repositório.
+O Ishikawa permanece contexto, sem obrigar tratar todas as causas. A visão de produto e a validação mantêm a estrutura original e a informação de pesquisa; trechos de aprovação/fechamento são contexto do cliente ou itens adiados, não funcionalidades restabelecidas.
 
-Manter exigências técnicas do caderno: segurança/deny-all, EP/BVA, contratos, evidências e custos no CP2; operação, qualidade, observabilidade e rollback nos marcos seguintes. Apresentar a revisão ao tutor; exigências externas não são dispensadas.
+## Entregas e verificação
 
-## Consequências e validação
+Sprint 2 (19 a 25/10): J1/J2 e base do cálculo. Sprint 3 (26/10 a 01/11): J3/J4, revisão/cancelamento e CP2. J5 é Must até 05/12, fora das 20 issues atuais. Responsáveis, estados e milestones preservados; sem encerramento automático por documentação.
 
-Reduzem-se telas, papéis e transições de negócio, mantendo as cenas da demo. Permanecem trabalho de histórico, snapshots e PDF/CSV: não se garante prazo apenas pelo corte. Confirmar capacidade e bloqueios semanalmente.
+[OpenAPI 0.2.0](../api/openapi.yaml) é contrato-alvo, distinto do código/contrato gerado atual de CarbonTrace. Esta revisão modifica documentacao, não implementa aquele produto.
 
-Aceite da decisão: documentação/contrato coerentes, IDs rastreáveis, critérios e issues sem exigências removidas, cinco jornadas cobertas no MVP e J1–J4 no CP2. Evidência de implementação virá de testes/PR/CI reais.
+Manter exigências do caderno: segurança/deny-all, EP/BVA, contratos, evidências, custos e marcos de operação/qualidade/rollback. Apresentar revisão ao tutor; não dispensar gate por decisão unilateral de produto. Métricas exploratórias de pesquisa/defensibilidade são identificadas como propostas, sem resultados inventados ou novas funcionalidades.
 
-GCP/Firebase mantidos; US$3–8 é estimativa, não medição. Registrar custo real (CP2 ≤US$5, CP3 ≤US$12, ciclo ≤US$50), com ação a US$40. Workflow e CODEOWNERS existentes permanecem inalterados.
+GCP/Firebase mantidos. US$3 a US$8 é estimativa; CP2 ≤US$5, CP3 ≤US$12, ciclo ≤US$50 e ação a US$40 exigem gasto real comprovado. Workflow e CODEOWNERS permanecem inalterados.

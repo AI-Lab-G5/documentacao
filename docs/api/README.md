@@ -1,4 +1,4 @@
-# API CarbonTrace — contrato-alvo 0.2.0
+# API CarbonTrace: contrato-alvo 0.2.0
 
 [OpenAPI](openapi.yaml) · [ADR-008](../adr/ADR-008-recorte-crud.md).
 **Especificação planejada, não API já implementada.** O repositório CarbonTrace mantém seu código e contrato gerado intactos nesta revisão. Seus endpoints atuais em português e autenticação precisam de adaptação conforme issues; não usar o lint deste arquivo como prova de integração.

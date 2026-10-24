@@ -1,11 +1,11 @@
 openapi: 3.1.0
 info:
-  title: CarbonTrace API — contrato-alvo
+  title: 'CarbonTrace API: contrato-alvo'
   version: 0.2.0
   description: Comportamento planejado conforme ADR-008 (23/10/2026), não comprovação de implementação. Um perfil
     funcionario acessa todas as unidades do próprio tenant. Claims tenant_id/papel, sem tenant selecionável pelo
     cliente. Decimal em strings; sem quatro perfis, aprovação, fechamento, publicação de fatores pela API ou hashes
-    obrigatórios. J1–J4 no CP2, J5 obrigatória no MVP posterior.
+    obrigatórios. J1-J4 no CP2, J5 obrigatória no MVP posterior.
 servers:
 - url: /v1
   description: Prefixo do contrato-alvo, distinto das rotas implementadas atuais.

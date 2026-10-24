@@ -1,4 +1,4 @@
-# Definition of Done — CarbonTrace
+# Definition of Done: CarbonTrace
 
 23/10/2026 · [ADR-008](adr/ADR-008-recorte-crud.md). Aplicar o tipo de evidência à entrega; não confundir planejamento, documentação, implementação e homologação.
 

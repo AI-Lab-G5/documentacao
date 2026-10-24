@@ -1,18 +1,35 @@
-# ADR-003 — Persistência
+# ADR-003: Persistência
 
 ## Status
-Revisado em 23/10/2026 pelo [ADR-008](ADR-008-recorte-crud.md). Substitui fechamento obrigatório, materialização periódica e Storage obrigatório.
+
+Registro original: Proposto (16/10/2026) - Autor: Tech Lead (Grupo 05).
+Revisado em 23/10/2026 pelo [ADR-008](ADR-008-recorte-crud.md). Não há fechamento obrigatório, materialização periódica ou Cloud Storage obrigatório no recorte atual.
+
+## Contexto
+
+O banco precisa separar empresas, preservar consumos anteriores e permitir reconstruir um cálculo depois de correções ou mudança de fator. Usar sobrescrita ou exclusão física no CRUD destruiria a informação necessária para a cena de demonstração e para explicar a origem dos números.
+
+A base já utiliza Firestore. Valores de domínio não podem depender de ponto flutuante, e o modelo precisa combinar dados correntes editáveis com evidências históricas imutáveis. Guardar tudo como append-only sem distinguir ponteiros/metadados também dificultaria operações comuns, como renomear uma unidade.
 
 ## Decisão
-Firestore com dados por tenant, mantendo isolamento na API. Referências/valores decimais como strings. Fatores publicados, revisões de consumos e snapshots de cálculo são imutáveis; ponteiros de revisão corrente e metadados de unidade/fonte podem ser atualizados em transação.
 
-Lançamento lógico identificado por unidade/fonte/competência. Correção/cancelamento cria revisão com número, referência anterior, UID, instante e motivo. Revisão-base evita perda concorrente. Não marcar a revisão antiga por atualização destrutiva; seu encadeamento e ponteiro corrente identificam a vigente. Cancelamento não libera a chave para outro lançamento nem oferece reativação neste MVP.
+Manter **Firestore**, com coleções de dados organizadas por tenant e acesso somente pela API. Quantidades, fatores e emissões são persistidos como **strings decimais**, convertidas para Decimal ao calcular. Escolher esse formato preserva a representação entre JSON/Python/banco, conforme ADR-007.
 
-Desativar unidade/fonte não apaga histórico ou cancela entradas. Snapshots contêm configuração esperada de fontes, revisões, conversões, fatores, metodologia, valores exatos, autor/data. Selecionar anterior não consulta estado corrente. Somente um conjunto de revisões entra em cada total.
+Fatores publicados, revisões e snapshots são imutáveis. Um lançamento lógico é identificado por tenant/unidade/fonte/competência. Correção/cancelamento cria nova revisão com referência anterior, número, motivo, UID e instante; uma transação verifica a revisão-base e atualiza o ponteiro corrente. Não alterar a revisão antiga para marcá-la como substituída. Cancelamento preserva a chave e o histórico; não há reativação no MVP.
 
-PDF/CSV gerados síncronos do mesmo snapshot, sem armazenar arquivos de forma permanente. Sem serviço separado de auditoria: revisões/snapshots ligados fornecem a trilha mínima.
+Metadados de unidade/fonte e ponteiros correntes podem ser atualizados. Desativar bloqueia nova coleta, sem apagar ou cancelar entradas existentes. O snapshot captura configuração esperada, revisões, conversões, fatores, metodologia, resultados exatos e autoria/data, permitindo consulta histórica independente do estado corrente.
 
-## Consequências e controles
-Consultas paginadas e filtradas, sem stream irrestrito ou listeners amplos sem justificativa. Agregação decimal na API, a partir do recorte completo, não apenas de uma página da interface. Total/mediana armazenados no snapshot evitam recomputação por página.
+Agregação considera o recorte completo e apenas uma revisão válida por lançamento. Totais/mediana do snapshot não são a soma de uma página da interface. Consultas são filtradas, limitadas e paginadas, sem listeners amplos sem justificativa. PDF/CSV são gerados síncronos do mesmo snapshot, sem manter arquivos permanentemente nem criar serviço separado de auditoria.
 
-A implementação define índices e limites operacionais e registra leituras/custos. Testar transações, revisões, cancelamentos, isolamento e ausência de duplicação. No Firestore cliente, deny-all; a imutabilidade via Admin SDK é responsabilidade testada da API.
+Alternativas descartadas:
+- **Sobrescrever/apagar consumos:** simplifica o CRUD, mas inviabiliza explicar correções e reproduzir resultados anteriores.
+- **Cloud SQL/PostgreSQL nesta etapa:** tipo NUMERIC e consultas relacionais são alternativas válidas; migrar agora exige infraestrutura/manutenção sem necessidade comprovada. Não se afirma preço atual como justificativa.
+- **Inteiros escalados:** exigem convencionar escala por tipo e conversão; strings + Decimal reduzem essa gestão manual no contrato adotado.
+- **Jobs periódicos, Storage e eventos de auditoria separados:** adiados porque snapshots/revisões e geração síncrona atendem o recorte com menos componentes.
+
+## Consequências
+
+- **Fica mais fácil:** Reutilizar a persistência existente e consultar origens antigas sem reconstruir planilhas ou depender de arquivos externos.
+- **Fica mais difícil:** Agregar strings com precisão exige cálculo na API e desenho explícito de transações/índices; histórico aumenta o volume armazenado.
+- **Riscos e mitigação:** Admin SDK pode sobrescrever histórico; Rules deny-all não o impedem. Validar operações na API/procedimento de carga e testar imutabilidade, concorrência, cancelamento e isolamento.
+- **Gatilho de revisão:** Leituras, armazenamento ou tempo de agregação medidos deixarem de atender custo/latência. Só então avaliar outra materialização ou banco.

@@ -1,7 +1,7 @@
-# Backlog MoSCoW — CarbonTrace
+# Backlog MoSCoW: CarbonTrace
 
 23/10/2026 · [Visão](../visao-de-produto.md) · [ADR-008](../adr/ADR-008-recorte-crud.md).
-Critérios são planejados, não resultados. Perfil único funcionario, acesso às unidades do próprio tenant. Must compreende J1–J5 até 05/12; as 20 issues CP2 cobrem J1–J4.
+Critérios são planejados, não resultados. Perfil único funcionario, acesso às unidades do próprio tenant. Must compreende J1-J5 até 05/12; as 20 issues CP2 cobrem J1-J4.
 
 Consultar a [matriz planejada de rastreabilidade](rastreabilidade.md); atualizar com testes/PR/CI reais durante a implementação.
 
@@ -21,8 +21,8 @@ IDs históricos não são reutilizados com outro significado. Prefixo M/S/C indi
 | CT-M08 | Must | Consolidado corrente/snapshot, sem versão de fechamento |
 | CT-M09 | Must | Detalhe rastreável, sem recibo criptográfico |
 | CT-M10 | Must | PDF/CSV do mesmo snapshot, sem jobs/manifesto |
-| CT-M11 | Must — novo | Cancelamento lógico com histórico |
-| CT-M12 | Must — novo | Ranking absoluto e alerta operacional |
+| CT-M11 | Must: novo | Cancelamento lógico com histórico |
+| CT-M12 | Must: novo | Ranking absoluto e alerta operacional |
 | CT-S01 | Fora deste MVP | Ponte de variação adiada |
 | CT-S02 | Fora deste MVP | Intensidade/MAD adiados; comparação básica migra para CT-M12 |
 | CT-S03 | Should | Plausibilidade histórica/qualidade automática após Must |
@@ -30,11 +30,11 @@ IDs históricos não são reutilizados com outro significado. Prefixo M/S/C indi
 | CT-C01 | Fora deste MVP | Auditor temporário adiado |
 | CT-C02 | Fora deste MVP | Vínculo/abordagem/filtros adicionais adiados |
 | CT-C03 | Fora deste MVP | Escolha AR5/AR6 adiada; metodologia fixa |
-| CT-W01–CT-W10 | Fora deste MVP | Exclusões originais mantidas |
+| CT-W01-CT-W10 | Fora deste MVP | Exclusões originais mantidas |
 
-## Must — critérios de aceite
+## Must: critérios de aceite
 
-### CT-M01 — Unidades e fontes (J1)
+### CT-M01: Unidades e fontes (J1)
 
 Como funcionário, quero organizar unidades da minha empresa.
 
@@ -43,7 +43,7 @@ Como funcionário, quero organizar unidades da minha empresa.
 3. Listas paginadas: padrão 20/máximo 100. UI com carregando, vazio, erro e sucesso.
 4. Desativação bloqueia nova coleta, preserva dados existentes e não subtrai consumos silenciosamente.
 
-### CT-M02 — Login e isolamento
+### CT-M02: Login e isolamento
 
 Como funcionário, quero acessar as unidades da minha empresa com conta individual.
 
@@ -52,7 +52,7 @@ Como funcionário, quero acessar as unidades da minha empresa com conta individu
 3. Funcionários do mesmo tenant acessam todas as unidades dele. A restrição antiga por unidade foi retirada.
 4. Firestore direto deny-all para anônimo/autenticado; API via Admin SDK mantém autorização própria. Provisionamento pela equipe, sem gestão de usuários na interface.
 
-### CT-M03 — Coleta validada (J2)
+### CT-M03: Coleta validada (J2)
 
 Como funcionário, quero preencher fonte, competência, quantidade e unidade.
 
@@ -61,7 +61,7 @@ Como funcionário, quero preencher fonte, competência, quantidade e unidade.
 3. Mesma Idempotency-Key/payload retorna o recurso anterior, sem nova revisão/evento. Chave reutilizada com outro payload →409, janela 24h. Sem hash criptográfico obrigatório.
 4. Massa de 20 erros de unidade identificáveis: sinalizar ≥19 antes da gravação. Não presumir detectar quantidade errada com unidade válida. Meta de usabilidade posterior: cada um de 3 participantes registra 4 fontes em ≤5 minutos.
 
-### CT-M04 — Fatores imutáveis (J3)
+### CT-M04: Fatores imutáveis (J3)
 
 Como funcionário, quero saber o fator utilizado sem administrá-lo na aplicação.
 
@@ -70,7 +70,7 @@ Como funcionário, quero saber o fator utilizado sem administrá-lo na aplicaç�
 3. Novo cálculo escolhe versão compatível mais recente vigente na competência; sem compatibilidade →422 e nenhum resultado válido. Procedimento de carga rejeita conjunto sem campos obrigatórios.
 4. Identificar dados sintéticos/preliminares na consulta e no relatório. Referência e condições de uso devem ser conferidas antes de alegar validação.
 
-### CT-M05 — Cálculo e reprodução (J3)
+### CT-M05: Cálculo e reprodução (J3)
 
 Como funcionário, quero calcular e conferir um resultado anterior.
 
@@ -80,7 +80,7 @@ Como funcionário, quero calcular e conferir um resultado anterior.
 4. Decimal no domínio, strings em JSON/banco, soma exata e apresentação em 3 casas ROUND_HALF_EVEN. Não arredondar intermediários.
 5. Estimativa reduzida não equivale a inventário completo homologado. Casos sintéticos comprovam comportamento; referências ambientais oficiais exigem conferência específica.
 
-### CT-M07 — Correção retroativa (J2/J3)
+### CT-M07: Correção retroativa (J2/J3)
 
 Como funcionário, quero corrigir preservando a origem.
 
@@ -89,7 +89,7 @@ Como funcionário, quero corrigir preservando a origem.
 3. Revisão-base desatualizada →409; reenvio idempotente não cria revisão extra. Novo cálculo usa corrente; anterior continua usando a entrada original.
 4. Sem aprovação, período fechado ou reabertura. Fator unitário sintético mantém resultados 100 e 120 consultáveis, sem duplicar totais.
 
-### CT-M08 — Consolidação (J4)
+### CT-M08: Consolidação (J4)
 
 Como funcionário, quero acompanhar a rede por mês, unidade e escopo.
 
@@ -98,7 +98,7 @@ Como funcionário, quero acompanhar a rede por mês, unidade e escopo.
 3. Em 1.000 cenários com semente registrada, incluindo frações, revisões e cancelamentos, soma exata das unidades = total. Mostrar diferença de arredondamento quando houver.
 4. Linhas paginadas 20/100; total e mediana usam todo o snapshot autorizado, não só a página. Queries filtradas/limitadas; sem listener amplo sem justificativa.
 
-### CT-M09 — Origem do resultado (J3/J5)
+### CT-M09: Origem do resultado (J3/J5)
 
 Como funcionário, quero explicar de onde veio o número.
 
@@ -106,7 +106,7 @@ Como funcionário, quero explicar de onde veio o número.
 2. Consultar origem de pelo menos 5 resultados sintéticos conhecidos, inclusive anteriores a correção/cancelamento.
 3. Sem SHA-256, assinatura, manifesto ou infraestrutura separada de auditoria. Revisões/snapshots ligados formam a trilha mínima.
 
-### CT-M10 — PDF/CSV (J5)
+### CT-M10: PDF/CSV (J5)
 
 Como funcionário, quero baixar o mesmo recorte em dois formatos.
 
@@ -115,7 +115,7 @@ Como funcionário, quero baixar o mesmo recorte em dois formatos.
 3. Síncrono, sem fechamento, aprovação, jobs ou Storage obrigatório. Indicar pendências e preliminaridade; PDF não certifica. Vazio: CSV com cabeçalho e PDF explicativo.
 4. Must até 05/12/2026; implementação não faz parte das 20 issues do CP2. Planejamento posterior deve ser explicitado.
 
-### CT-M11 — Cancelamento lógico (novo, J2)
+### CT-M11: Cancelamento lógico (novo, J2)
 
 Como funcionário, quero retirar lançamento errado sem apagar a origem.
 
@@ -123,7 +123,7 @@ Como funcionário, quero retirar lançamento errado sem apagar a origem.
 2. Corrente exclui dos totais; consultas mostram cancelamento e histórico. Snapshot anterior permanece. Reenvio idempotente não cria nova revisão.
 3. Sem DELETE físico nem reativação pela interface. A chave unidade/fonte/competência permanece reservada após cancelar.
 
-### CT-M12 — Ranking e mediana (novo, J4)
+### CT-M12: Ranking e mediana (novo, J4)
 
 Como funcionário, quero comparar totais da minha empresa.
 
@@ -144,7 +144,7 @@ Critérios negativos: contrato/catálogo não oferecem esses recursos; fonte nã
 
 ## Marcos, qualidade e dependências
 
-CP2: 3–5 jornadas locais (planejadas J1–J4), OpenAPI atualizada, quatro estados UI, deny-all, testes sem token/inválido/expirado/papel sem permissão/tenant incorreto/acesso indevido, EP/BVA, contrato/prioridades, matriz e primeiro relatório em /docs; custo ≤US$5, paginação e queries controladas. Não contar teste pulado como aprovado.
+CP2: 3-5 jornadas locais (planejadas J1-J4), OpenAPI atualizada, quatro estados UI, deny-all, testes sem token/inválido/expirado/papel sem permissão/tenant incorreto/acesso indevido, EP/BVA, contrato/prioridades, matriz e primeiro relatório em /docs; custo ≤US$5, paginação e queries controladas. Não contar teste pulado como aprovado.
 
 Exigências posteriores do caderno permanecem: publicação/operação e custo ≤US$12 no CP3; cobertura ≥80% domínio/≥60% global, Lighthouse ≥90, p95 leitura ≤800ms/escrita ≤1,5s, segurança, rollback e gates no CP4. Alterações dependem do tutor.
 

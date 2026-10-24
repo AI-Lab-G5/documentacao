@@ -1,16 +1,35 @@
-# ADR-007 — Decimal e arredondamento
+# ADR-007: Aritmética decimal e política de arredondamento
 
 ## Status
-Revisado em 23/10/2026; compatível com [ADR-008](ADR-008-recorte-crud.md). A regra única substitui o ROUND_HALF_UP antes proposto no backlog.
+
+Registro original: Proposto (16/10/2026) - Autor: Tech Lead (Grupo 05).
+Revisado em 23/10/2026, compatível com [ADR-008](ADR-008-recorte-crud.md). A regra única substitui o ROUND_HALF_UP anteriormente proposto no backlog.
+
+## Contexto
+
+Quantidades e fatores decimais precisam ser convertidos, multiplicados e somados em várias unidades. Ponto flutuante binário pode representar esses valores aproximadamente; arredondar cada etapa também pode fazer o total da rede divergir da soma exata.
+
+O usuário precisa distinguir o número exato usado no cálculo da apresentação com poucas casas. O recorte simples não elimina esse problema: mesmo duas parcelas podem exibir soma diferente do total arredondado. Uma única política evita que API, interface e exportação expliquem números diferentes.
 
 ## Decisão
-Quantidades, fatores, conversões e emissões usam decimal.Decimal no domínio, criado de strings. JSON e Firestore preservam strings decimais sem notação científica. Frontend não usa Number/parseFloat para calcular ou normalizar valores exatos; contadores e posições de UI podem ser números.
 
-Precisão de trabalho dimensionada para os operandos e a soma, de pelo menos 28 dígitos significativos, com validação para não aceitar dados que excedam a precisão suportada silenciosamente. Evitar arredondamento intermediário por contexto insuficiente. Sem NaN/infinito/negativo para consumo. Quantidade explicitamente zero é válida.
+Usar **decimal.Decimal** no domínio, construído de strings. Banco e JSON transportam **strings decimais sem notação científica**. A interface não usa Number/parseFloat para normalizar ou calcular quantidades/fatores/emissões; contadores e posições podem continuar números.
 
-Conversão permitida: MWh×1000→kWh; kWh, L e kg mantêm unidade-base da fonte compatível. Calcular/somar exato antes de apresentar; saída de exibição em 3 casas usando ROUND_HALF_EVEN. Guardar valor não arredondado no snapshot. Diferença entre soma das parcelas exibidas e total exibido deve aparecer.
+O contexto de precisão será dimensionado para operandos e soma, com pelo menos 28 dígitos significativos; validar o que ultrapassar a precisão suportada, sem arredondamento intermediário silencioso. Rejeitar NaN/infinito/negativo de consumo; aceitar zero explícito.
 
-Exemplo sintético: 0.1234+0.2344=0.3578; exibir parcelas 0.123 e 0.234, total 0.358 e diferença 0.001. Empate 1.2345→1.234; 1.2355→1.236.
+Converter somente MWh×1000→kWh; demais unidades são kWh/L/kg compatíveis com a fonte. Somar valores exatos antes de arredondar. **ROUND_HALF_EVEN**, em 3 casas na exibição, reduz a escolha sistemática do mesmo lado nos empates e mantém a regra uniforme. A política e a metodologia ficam identificadas no snapshot.
+
+Preservar o exato e mostrar diferença de apresentação: 0.1234+0.2344=0.3578; parcelas 0.123 e 0.234 somam 0.357, mas total exibe 0.358, diferença 0.001. Empates: 1.2345→1.234; 1.2355→1.236. Classificar >50% da mediana antes do arredondamento visual.
+
+Alternativas descartadas:
+- **Float/double no domínio:** aproximação binária pode comprometer a igualdade exigida de recálculo/agregação.
+- **Arredondar intermediários ou usar a soma das parcelas exibidas como total:** perde precisão e esconde o valor efetivamente calculado.
+- **ROUND_HALF_UP em um documento e HALF_EVEN em outro:** políticas diferentes criam inconsistência; o projeto escolhe uma só, sem afirmar que todo uso de HALF_UP produz erro por si mesmo.
+- **Inteiros com escala fixa em todos os campos:** exigem convenções adicionais para fatores e conversões; strings/Decimal mantêm o contrato já escolhido.
 
 ## Consequências
-Política/metodologia identificadas no snapshot e constantes no recálculo. Classificar alerta >50% antes de arredondar. Strings são contrato, não homologação ambiental. Testar fronteiras, soma e conversão; não proibir floats indiscriminadamente em campos que não são valores de domínio.
+
+- **Fica mais fácil:** Reproduzir cálculos, testar igualdade exata e explicar diferenças de arredondamento sem alterar os dados históricos.
+- **Fica mais difícil:** Validar strings, configurar precisão suficiente e impedir conversão acidental para número binário em clientes/scripts.
+- **Riscos e mitigação:** Contexto decimal insuficiente ou política diferente na exportação. Testar conversões, empates, frações e somas; reutilizar snapshot/política. Não proibir float indiscriminadamente em campos que não são valores do domínio.
+- **Gatilho de revisão:** Entrada/metodologia que exija outra precisão ou apresentação. Mudança deve ser versionada e não alterar a interpretação de snapshots anteriores.
