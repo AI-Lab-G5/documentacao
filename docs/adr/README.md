@@ -1,6 +1,6 @@
 # Índice de Registos de Decisão de Arquitetura (ADR)
 
-Revisão de 23/10/2026. Cada ADR registra contexto, decisão, alternativas, consequências, riscos e gatilho de revisão. O [ADR-008](ADR-008-recorte-crud.md) mantém as cinco jornadas e registra o corte de perfis/fluxos. Decisão documentada não comprova implementação.
+Revisão de escopo de 23/10/2026, sincronizada com as 10 issues e o recorte J1-J3 em 25/10/2026. Cada ADR registra contexto, decisão, alternativas, consequências, riscos e gatilho de revisão. O [ADR-008](ADR-008-recorte-crud.md) mantém as cinco jornadas e registra o corte de perfis/fluxos. Decisão documentada não comprova implementação.
 
 | Número | Título | Status | Resumo (Para o PO) |
 | :--- | :--- | :--- | :--- |
@@ -9,7 +9,7 @@ Revisão de 23/10/2026. Cada ADR registra contexto, decisão, alternativas, cons
 | [ADR-003](ADR-003-persistencias.md) | Persistência | Revisada; implementação a verificar | Revisões e snapshots preservam o anterior; strings decimais evitam perder precisão no armazenamento. |
 | [ADR-004](ADR-004-estrategia-testes.md) | Estratégia de testes | Revisada; execução a verificar | Testes ligam critérios a resultados reproduzíveis, sem confundir documento ou CI TODO com software validado. |
 | [ADR-005](ADR-005-fatores-imutaveis.md) | Fatores e metodologia | Revisada; implementação a verificar | Manter A depois de B permite explicar o cálculo antigo, sem tela de publicação ou hashes obrigatórios. |
-| [ADR-006](ADR-006-idempotencia.md) | Idempotência e identificação | Revisada; implementação a verificar | Chave de negócio/operação e revisão-base evitam duplicação por rede e perda de correções concorrentes. |
+| [ADR-006](ADR-006-idempotencia.md) | Idempotência e identificação | Revisada; implementação a verificar | Chave de negócio evita duplicatas no CP2; operação de 24h/revisão-base são desenho posterior para correções concorrentes. |
 | [ADR-007](ADR-007-arimetica-decimal.md) | Decimal e arredondamento | Mantida/alinhada | Uma regra de precisão e apresentação evita divergência entre unidades, rede e exportação. |
 | [ADR-008](ADR-008-recorte-crud.md) | Recorte CRUD com requisitos originais | Produto aprovado; implementação pendente | Cortar perfis e fechamento preservando versões, rede e relatórios reduz escopo sem descaracterizar a proposta. |
 

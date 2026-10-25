@@ -5,7 +5,10 @@ info:
   description: Comportamento planejado conforme ADR-008 (23/10/2026), não comprovação de implementação. Um perfil
     funcionario acessa todas as unidades do próprio tenant. Claims tenant_id/papel, sem tenant selecionável pelo
     cliente. Decimal em strings; sem quatro perfis, aprovação, fechamento, publicação de fatores pela API ou hashes
-    obrigatórios. J1-J3 no CP2; J4/J5 obrigatórias no MVP posterior.
+    obrigatórios. J1-J3 no CP2; J4/J5 obrigatórias no MVP posterior. Este contrato completo inclui evolução
+    pós-CP2 (revisões/cancelamento, janela de 24h e snapshots de rede); TL/Backend documentam o recorte
+    mínimo efetivamente entregue antes dos testes de contrato. Saúde pública planejada em /healthz e /readyz.
+    O /health da aplicação é legado e precisa de adequação, não é exceção adicional autorizada.
 servers:
 - url: /v1
   description: Prefixo do contrato-alvo, distinto das rotas implementadas atuais.
@@ -25,13 +28,15 @@ tags:
 security:
 - bearerAuth: []
 paths:
-  /health:
+  /healthz:
+    servers:
+    - url: /
     get:
       tags:
       - Transversal
       operationId: getHealth
       summary: Verificar saúde
-      description: Verificar saúde. Contrato-alvo; consultar ADR-008.
+      description: Prova de vida pública planejada para o CP2, na raiz. Substitui o /health legado; não comprova implementação.
       responses:
         '200':
           description: Operação concluída
@@ -41,6 +46,29 @@ paths:
                 $ref: '#/components/schemas/Health'
               example:
                 status: ok
+        '400':
+          description: Requisição HTTP malformada.
+      security: []
+  /readyz:
+    servers:
+    - url: /
+    get:
+      tags:
+      - Transversal
+      operationId: getReadiness
+      summary: Verificar prontidão
+      description: Prontidão pública planejada para o CP2, na raiz. Falha de dependência necessária retorna 503; não comprova implementação.
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+              example:
+                status: ok
+        '503':
+          description: Dependência necessária indisponível; serviço ainda não pronto.
         '400':
           description: Requisição HTTP malformada.
       security: []
@@ -1173,7 +1201,7 @@ components:
         type: string
         minLength: 1
         maxLength: 128
-      description: Escopo tenant+usuário+operação+recurso; janela 24h; mesma chave com payload diferente retorna
+      description: Alvo posterior ao CP2, não requisito do contrato mínimo J1-J3. Escopo tenant+usuário+operação+recurso; janela 24h; mesma chave com payload diferente retorna
         409.
     facilityId:
       name: facilityId

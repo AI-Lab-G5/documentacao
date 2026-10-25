@@ -22,6 +22,8 @@ Alternativas avaliadas:
 - **Java/BigDecimal ou C#/.NET decimal:** também são viáveis, porém uma mudança agora amplia trabalho de implantação e manutenção; não há benchmark do projeto que demonstre vantagem suficiente.
 - **Novos serviços para filas, jobs e arquivos permanentes:** adiados porque relatórios síncronos e snapshots já atendem o MVP reduzido.
 
+Em 25/10/2026, o planejamento concentra o CP2 no ambiente local. Cloud Run/Hosting, Workload Identity e operação em nuvem continuam escolhas para os marcos posteriores; não são tarefas extras das 10 issues atuais. DevOps prepara Compose/CI/custos, Backend e Frontend implementam o núcleo e TL revisa.
+
 ## Consequências
 
 - **Fica mais fácil:** Reutilizar a base atual, compartilhar ambiente local reproduzível e concentrar esforço nas jornadas, precisão e histórico.

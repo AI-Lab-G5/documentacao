@@ -26,6 +26,8 @@ Alternativas descartadas:
 - **Conta única compartilhada ou tenant enviado pelo navegador:** rejeitados por perda de autoria e possibilidade de ampliar acesso indevidamente.
 - **Multi-tenancy nativo/SSO empresarial:** não necessário ao piloto; avaliar complexidade, recursos e custo somente se surgirem requisitos reais, sem pressupor preço vigente.
 
+Aplicação no CP2 (25/10/2026): Backend implementa tokens/tenant/papel em #11/#21; QA comprova os quatro casos por rota em #24; TL revisa em #7/#18 e DevOps prepara identidades/ambiente em #13. Somente /healthz e /readyz são exceções públicas planejadas. O /health legado precisa ser reconciliado por TL/Backend, sem transformar o cabeçalho debug em prova de login.
+
 ## Consequências
 
 - **Fica mais fácil:** Executar o CRUD com um conjunto único de permissões e reproduzir testes locais com contas individuais.

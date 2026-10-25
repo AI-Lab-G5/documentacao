@@ -27,6 +27,8 @@ Alternativas descartadas:
 - **ROUND_HALF_UP em um documento e HALF_EVEN em outro:** políticas diferentes criam inconsistência; o projeto escolhe uma só, sem afirmar que todo uso de HALF_UP produz erro por si mesmo.
 - **Inteiros com escala fixa em todos os campos:** exigem convenções adicionais para fatores e conversões; strings/Decimal mantêm o contrato já escolhido.
 
+Aplicação no CP2 (25/10/2026): Backend implementa Decimal/conversões em #11/#21; TL revisa em #7/#18; QA prepara e executa os limites/resultados esperados em #24. TL/Backend documentam o teto concreto da quantidade por fonte/unidade antes da BVA, com PO conferindo a regra. Totais/mediana/exportações permanecem para J4/J5, sem postergar a precisão do núcleo.
+
 ## Consequências
 
 - **Fica mais fácil:** Reproduzir cálculos, testar igualdade exata e explicar diferenças de arredondamento sem alterar os dados históricos.

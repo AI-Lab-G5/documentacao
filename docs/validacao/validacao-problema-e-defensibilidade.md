@@ -131,7 +131,7 @@ No Demo Day, vale mostrar uma correção que preserva o relatório antigo, um re
 
 #### Antes do Demo Day
 
-As responsabilidades abaixo seguem as funções do grupo dos seguintes integrantes do grupo:
+As responsabilidades abaixo seguem as funções dos integrantes e cobrem a validação do MVP completo. Não são dez novas issues nem exigências adicionais do CP2. Em 25/10, D01-D03 e as provas de J1-J3 ficam nas issues #7/#9/#11/#13/#18/#19/#21/#24; PO refina/confere em #5/#15. D04-D07 e o exercício exploratório adicional pertencem às etapas posteriores, com execução ainda a comprovar:
 
 | Função | Integrante |
 | --- | --- |
@@ -145,11 +145,11 @@ As responsabilidades abaixo seguem as funções do grupo dos seguintes integrant
 | --- | --- | --- |
 | Product Owner (PO) | Realizar as 2 entrevistas previstas, obter consentimento, selecionar problemas e confirmar que estão no Must | Síntese sem identificação pessoal e origem dos problemas; se não houver entrevistas, declarar zero e usar apenas hipóteses documentais |
 | Tech Lead | Conferir as regras de cálculo e os resultados esperados de D01 a D07; revisar as alterações de Backend e Frontend e resolver dúvidas técnicas | Casos revisados, decisões técnicas registradas e revisão das alterações, respeitando a separação entre autor e revisor |
-| Backend | Implementar os testes de cálculo, validação na API, fatores, revisões e consolidação de D01 a D07; corrigir o comportamento quando necessário | Testes automatizados e massas sintéticas com versão do código identificada |
+| Backend | Implementar domínio/API e testes unitários/integração de sua camada; fornecer massas/resultados ao QA e corrigir o comportamento quando necessário. D04-D07 entram nas respectivas entregas posteriores | Testes automatizados e massas sintéticas com versão do código identificada |
 | Frontend | Preparar formulários, mensagens, correção/cancelamento, consulta de snapshots e origem dos cálculos | Fluxo D04 navegável, versões anterior/atual visíveis; medir a meta exploratória de origem em 60 segundos e 3 cliques |
 | DevOps + QA | Preparar os 2 casos adicionais e obter a revisão do Tech Lead antes de entregá-los aos implementadores, reservando os 2 dias úteis de execução até 04/12/2026 | Entradas, resultados esperados, origem, revisão e momento de entrega de cada caso |
 | Backend e Frontend | Incorporar os casos adicionais nas respectivas camadas; registrar o esforço individual e executar os testes aplicáveis | Correções e testes necessários, horas-pessoa e prazo decorrido por caso |
-| DevOps + QA | Preparar o ambiente e a execução no CI; executar a suíte completa e o fluxo de interface; guardar resultados e falhas | Ambiente reproduzível, versão implantada, relatório de testes e evidências dos tempos e cliques |
+| DevOps + QA | Preparar ambiente/CI; QA elabora EP/BVA, matriz e relatório e executa os testes/fluxos da etapa entregue. DevOps produz prints de calculadora/faturamento e QA guarda resultados/falhas | Ambiente reproduzível, versão implantada, relatório de testes e evidências dos tempos e cliques |
 | Product Owner (PO), com DevOps + QA | Consolidar o esforço de todos os envolvidos e comparar os resultados com os critérios definidos | Quadro de aprovação ou reprovação dos casos e da meta de esforço e prazo |
 
 Os fatores abaixo são fictícios e servem somente para testar o sistema. Em cada cenário, usar dados isolados. Um funcionário opera as unidades da própria empresa, sem aprovação, fechamento ou reabertura; CT-M06 está adiada. Snapshots/revisões preservam o anterior e fatores são preparados pela equipe. Usar outra empresa para testar isolamento.
@@ -165,6 +165,8 @@ Os fatores abaixo são fictícios e servem somente para testar o sistema. Em cad
 | D07. PDF/CSV | Exportar o mesmo snapshot A após B e correção/cancelamento | Mesma origem e valores A nos dois formatos, com revisões/fatores/metodologia/UID/datas e indicação de preliminaridade/pendências |
 
 D01 a D07 verificam o comportamento técnico; quantidade de execuções não substitui cobertura por critério, EP/BVA, contratos e segurança. As metas anteriores de 100 recálculos, 1.000 agregações e 19/20 erros deixam de ser gate obrigatório nesta priorização. A avaliação metodológica original de 10 casos de referência/tolerância de 0,1% permanece proposta adicional a confirmar para fontes compatíveis, sem declarar inventário homologado ou ampliar o catálogo. D01 a D03 pertencem ao núcleo do CP2 J1-J3, junto dos testes de teto/mês/unidade e demais critérios. D04 (correção/cancelamento avançados), D05/D06 (consolidação/mediana) e D07 (exportação) seguem no MVP nas fases posteriores, fora das 10 issues ativas. Registrar verificações executadas e pendentes, sem tratar proposta como resultado.
+
+Para 01/11, o roteiro do CP2 terá 5 a 10 linhas com login, cadastro de unidade/fonte, coleta válida, cálculo com fator versionado, recarga e um erro; o PO o prepara e testa pessoalmente. Os passos abaixo permanecem como protocolo do Demo Day, não como obrigação antecipada de J4/J5.
 
 #### Durante o Demo Day
 

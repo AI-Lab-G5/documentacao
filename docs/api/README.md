@@ -11,12 +11,14 @@ Prefixo /v1. Token Bearer verificado pela API, claims tenant_id e papel=funciona
 
 | Jornada | Operações planejadas |
 | --- | --- |
-| Transversal | GET /health público; GET /me autenticado |
+| Transversal | GET /healthz e GET /readyz públicos, na raiz; GET /me autenticado sob /v1 |
 | J1 | GET/POST /facilities; GET/PATCH /facilities/{facilityId}; GET/POST fontes; PATCH fonte para desativar; GET catálogo |
 | J2 | POST/GET registros; GET registro e revisões; POST correct/cancel |
 | J3 | GET versões de fatores; POST/GET cálculos; GET cálculo; POST recalculate do snapshot |
 | J4 | GET dashboard/summary e dashboard/outliers por calculationId |
 | J5 | POST /reports com calculationId e formato, resposta binária síncrona |
+
+As operações corretivas/de revisões de J2, snapshots completos da rede e cenários após correção de J3 descrevem o alvo posterior; apenas cadastro/consulta/coleta validada e cálculo versionado/origem básica compõem o aceite atual. O /health da aplicação é legado, não uma terceira exceção de autenticação autorizada pelo guia. A adequação de código/Compose fica com #7/#11/#18.
 
 Catálogo fixo electricity/diesel/gasoline/lpg: kWh/MWh, L, L, kg. Eletricidade Escopo 2, demais Escopo 1. Fonte pode ser desativada, sem apagar origem. Não há endpoints de publicar fator, aprovar, fechar, auditoria separada ou jobs de relatório.
 
@@ -56,6 +58,6 @@ POST /reports recebe calculationId e format pdf/csv. Ambos usam o mesmo snapshot
 
 ## Erros e verificação
 
-401 token ausente/inválido/expirado; 403 sem tenant/papel admitido; 404 recurso ausente/de outra empresa; 409 duplicidade/revisão-base/chave; 422 dados incompatíveis. Testar zero, ausência, negativo, unidades, reenvio e acesso indevido. Firestore direto deny-all; Admin SDK depende da autorização na API.
+401 token ausente/inválido/expirado; 403 sem tenant/papel admitido; 404 recurso ausente/de outra empresa; 409 duplicidade/revisão-base/chave; 422 dados incompatíveis. Testar zero, ausência, negativo, teto concreto (abaixo/no/acima), unidades, competência/mês, reenvio e acesso indevido. O teto e os limites de tamanho/formato devem ser definidos por TL/Backend com PO antes da BVA; este alvo ainda não fixa um valor numérico universal sem justificativa. Firestore direto deny-all; Admin SDK depende da autorização na API.
 
-Validar contrato com Redocly CLI e validar exemplos/referências contra os schemas. Quando a aplicação for implementada, executar testes de contrato reais com emuladores. As rotas e schemas do alvo não significam que os testes do backend já passaram.
+Validar contrato com Redocly CLI e validar exemplos/referências contra os schemas. No CP2, TL/Backend registram o contrato mínimo entregue e QA executa testes reais com emuladores contra esse recorte; cabeçalhos/campos avançados obrigatórios no alvo completo não podem ser usados para impor a janela de 24h ou snapshots da rede ao checkpoint. As rotas e schemas do alvo não significam que os testes do backend já passaram.

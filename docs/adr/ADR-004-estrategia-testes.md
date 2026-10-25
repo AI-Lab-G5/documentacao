@@ -3,7 +3,7 @@
 ## Status
 
 Registro original: Proposto (16/10/2026) - Autor: Tech Lead (Grupo 05).
-Revisado em 23/10/2026 conforme [ADR-008](ADR-008-recorte-crud.md).
+Revisado em 23/10/2026 e sincronizado em 25/10/2026 conforme [ADR-008](ADR-008-recorte-crud.md).
 
 ## Contexto
 
@@ -16,14 +16,14 @@ O escopo menor retira a matriz de quatro perfis e o fluxo de aprovação/fechame
 Manter três pilares, complementados por smoke de interface:
 
 1. **Unitários e de propriedade:** testar Decimal, conversão kWh/MWh, validações, idempotência e agregações; geração com semente, por Hypothesis ou massa determinística equivalente, para cenários definidos incluindo revisões/cancelamentos, sem contagem fixa como gate.
-2. **Contrato:** verificar schemas, campos, erros e rotas implementadas contra a OpenAPI-alvo 0.2.0. Lint do documento não prova compatibilidade da aplicação.
+2. **Contrato:** verificar schemas, campos, erros e rotas contra o contrato mínimo efetivamente entregue por TL/Backend no CP2; usar a OpenAPI-alvo 0.2.0 para a evolução completa, sem exigir todos os campos/headers futuros agora. Lint do documento não prova compatibilidade da aplicação.
 3. **Golden tests e integração:** emuladores Auth/Firestore, fatores sintéticos A/B, entradas/revisões conhecidas e recálculo do original com diferença zero.
 
-Smoke E2E confirma J1-J3 locais no CP2, incluindo estados, teclado/rótulos/status além da cor, persistência após recarga e erro amigável. J4/J5 pertencem às semanas 5 a 8; não bloqueiam as 10 issues ativas. QA monta a suíte, /docs/rastreabilidade.md e primeiro relatório com total/aprovados/cobertura/BUG-xxx; PO confere. Cada critério entregue requer teste, e cada rota protegida os quatro casos de autorização; não há número mínimo arbitrário de testes.
+Smoke E2E confirma J1-J3 locais no CP2, incluindo estados, teclado/rótulos/status com texto e ícone além da cor, persistência após recarga e erro amigável. J4/J5 pertencem às semanas 5 a 8; não bloqueiam as 10 issues ativas. QA monta a suíte, /docs/rastreabilidade.md e primeiro relatório com total/aprovados/cobertura/BUG-xxx; PO confere. Cada critério entregue requer teste, e cada rota protegida os quatro casos de autorização; não há número mínimo arbitrário de testes.
 
-EP/BVA inclui zero/ausente/negativo, unidade incompatível, duplicidade, base concorrente e limites de paginação. Cobrir mediana, ±50% exatos, >50%, zero/amostra insuficiente e incompletas. Segurança cobre todas as rotas: token ausente/inválido/expirado, papel sem permissão, tenant incorreto, acesso indevido e Firestore direto deny-all. Acesso entre unidades do mesmo tenant é permitido e deve ter caso positivo.
+No CP2, EP/BVA inclui zero/ausente/negativo/não finito, teto concreto (abaixo/no/acima), unidade compatível/incompatível, mês/competência, tipos/tamanhos/formatos relevantes, duplicidade e limites de paginação implementados. Backend/TL definem o teto, PO confere a regra e QA prepara/executa a suíte. Base concorrente/cancelamento e mediana (±50% exatos, >50%, zero/amostra insuficiente e incompletas) serão cobertos nas entregas posteriores correspondentes. Segurança cobre todas as rotas: token ausente/inválido/expirado, papel sem permissão, tenant incorreto, acesso indevido e Firestore direto deny-all. Acesso entre unidades do mesmo tenant é permitido e deve ter caso positivo.
 
-Cada teste precisa apontar ao aceite; relatório registra comando, ambiente, versão, esperado/observado e PR/CI real. Não contar pulos como aprovados nem CI com TODO como execução. Casos metodológicos externos e métricas exploratórias de defensibilidade são identificados separadamente, sem alegar homologação.
+Cada teste precisa apontar ao aceite; relatório registra comando, ambiente, versão, esperado/observado, total executado, aprovados/reprovados/pulados, cobertura, BUG-xxx e PR/CI real. Bugs ficam em /docs/bugs/BUG-xxx.md, vinculados ao relatório e à issue responsável. Não contar pulos como aprovados nem CI com TODO como execução. Casos metodológicos externos e métricas exploratórias de defensibilidade são identificados separadamente, sem alegar homologação.
 
 Alternativas descartadas:
 - **Somente testes manuais ou de UI:** não isolam erros de precisão/versionamento e dificultam repetir casos.

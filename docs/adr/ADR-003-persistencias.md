@@ -27,6 +27,8 @@ Alternativas descartadas:
 - **Inteiros escalados:** exigem convencionar escala por tipo e conversão; strings + Decimal reduzem essa gestão manual no contrato adotado.
 - **Jobs periódicos, Storage e eventos de auditoria separados:** adiados porque snapshots/revisões e geração síncrona atendem o recorte com menos componentes.
 
+Aplicação por etapa em 25/10/2026: o CP2 exige persistir entrada original, autoria/data, fator/versão/valor e resultado, sem substituir silenciosamente o cálculo anterior após B. Transações de correção concorrente, cancelamento, reserva de chave e snapshot completo da rede descrevem a evolução do MVP; não bloqueiam J1-J3. O histórico já existente deve ser preservado.
+
 ## Consequências
 
 - **Fica mais fácil:** Reutilizar a persistência existente e consultar origens antigas sem reconstruir planilhas ou depender de arquivos externos.

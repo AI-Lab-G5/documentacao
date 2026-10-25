@@ -1,9 +1,13 @@
 # Backlog MoSCoW: CarbonTrace
 
-23/10/2026 · [Visão](../visao-de-produto.md) · [ADR-008](../adr/ADR-008-recorte-crud.md).
+Revisão de escopo em 23/10/2026; planejamento sincronizado em 25/10/2026 · [Visão](../visao-de-produto.md) · [ADR-008](../adr/ADR-008-recorte-crud.md).
 Critérios são planejados, não resultados. Perfil único funcionario, acesso às unidades do próprio tenant. Must compreende J1-J5 até 05/12; as 10 issues ativas do CP2 cobrem J1-J3. O recorte de 25/10 segue o Guia para os POs: cada critério entregue tem teste, sem contagem arbitrária de casos. J4/J5 e detalhes avançados de correção/cancelamento pertencem às fases posteriores.
 
-Consultar a [matriz planejada de rastreabilidade](rastreabilidade.md); atualizar com testes/PR/CI reais durante a implementação.
+Consultar o [índice planejado de rastreabilidade](rastreabilidade.md) e a [revisão datada da S3](revisao-2026-10-25-s3.md). QA produzirá a matriz executada em /docs/rastreabilidade.md de CarbonTrace; este backlog não declara testes executados.
+
+O prefixo Must se refere ao produto completo. Para o CP2, o recorte é: CT-M01 no cadastro/consulta/fontes e validações; CT-M02 no login e isolamento; CT-M03 nos critérios 1, 2 (entrada original/autoria e prevenção de duplicatas) e 4 (validação; usabilidade posterior); CT-M04 no versionamento/consulta; CT-M05 em conversão, Decimal, resultado salvo e reprodução com fator original; CT-M09 na origem básica desse resultado. Edição/desativação avançada, reserva da chave após cancelamento, CT-M03.3 (janela de 24h), CT-M05.2 (snapshot completo da rede), cenários após correção/cancelamento e a meta ampliada de CT-M09.2 ficam para depois. CT-M07/08/10/11/12 não são gate deste checkpoint.
+
+O aceite do recorte não encerra silenciosamente critérios restantes da história completa: registrar cada critério entregue/testado e manter os demais pendentes no backlog. As issues #5 e #15 verificam as histórias Must do CP2, distinguindo-as do restante do MVP.
 
 ## Correspondência dos IDs
 
@@ -56,7 +60,7 @@ Como funcionário, quero acessar as unidades da minha empresa com conta individu
 
 Como funcionário, quero preencher fonte, competência, quantidade e unidade.
 
-1. YYYY-MM válido, fonte ativa, quantidade decimal finita ≥0; eletricidade kWh/MWh, diesel/gasolina L, GLP kg. Ausência não vira zero; inválido →422 e zero gravação.
+1. YYYY-MM válido, fonte ativa, quantidade decimal finita ≥0 e até o teto documentado por fonte/unidade no contrato mínimo; eletricidade kWh/MWh, diesel/gasolina L, GLP kg. Ausência não vira zero; inválido →422 e zero gravação.
 2. Guardar empresa, unidade, fonte, competência, quantidade/unidade originais, UID, instante e revisão 1. Um lançamento lógico por unidade/fonte/competência; nova entrada duplicada →409, inclusive após cancelamento.
 3. Mesma Idempotency-Key/payload retorna o recurso anterior, sem nova revisão/evento. Chave reutilizada com outro payload →409, janela 24h. Sem hash criptográfico obrigatório.
 4. Cobrir as partições e fronteiras de zero, negativo, teto concreto, unidade e mês, rejeitando todos os casos inválidos sem gravação. Não presumir detectar quantidade errada com unidade válida. Meta de usabilidade posterior: cada um de 3 participantes registra 4 fontes em ≤5 minutos.

@@ -1,6 +1,6 @@
 # Definition of Done: CarbonTrace
 
-23/10/2026 · [ADR-008](adr/ADR-008-recorte-crud.md). Aplicar o tipo de evidência à entrega; não confundir planejamento, documentação, implementação e homologação.
+Atualizado em 25/10/2026 · [ADR-008](adr/ADR-008-recorte-crud.md). Aplicar o tipo de evidência à entrega; não confundir planejamento, documentação, implementação e homologação.
 
 ## Toda entrega
 
@@ -22,14 +22,24 @@
 ## Implementação, quando aplicável
 
 - [ ] Testes relevantes ligados ao aceite, incluindo contrato e EP/BVA; ambiente, versão e comandos reproduzíveis.
-- [ ] UI com carregando, vazio, erro e sucesso; confirmação de cancelamento e aviso de limites.
-- [ ] API autoriza tenant/papel funcionario em cada rota; testes de token e acesso indevido; Firestore direto deny-all.
+- [ ] UI com carregando, vazio, erro e sucesso; teclado, rótulos e status com texto e ícone além da cor. Confirmação de cancelamento somente quando essa função for implementada.
+- [ ] Cada rota protegida valida token Firebase, tenant e papel funcionario; testar sem token, expirado, papel errado e empresa errada. Exceções públicas planejadas: /healthz e /readyz. Firestore direto deny-all, com testes para anônimo e autenticado.
 - [ ] Decimal/strings para domínio, ROUND_HALF_EVEN e nenhuma soma de páginas como total da rede.
-- [ ] Revisões/snapshots preservados; correção/cancelamento idempotentes e origem consultável.
+- [ ] No CP2, preservar entrada original, autoria/datas, fator/versão/valor e resultado; B não altera A e o cálculo original se reproduz. Revisões concorrentes, cancelamento, janela de 24h e snapshots completos da rede aplicam-se às entregas posteriores, sem apagar histórico existente.
 - [ ] Fatores versionados/preliminares corretamente identificados e recálculo histórico consistente.
 - [ ] Queries paginadas/controladas; sem listeners amplos sem justificativa.
 - [ ] J5, quando implementada, exporta PDF/CSV do mesmo snapshot e documenta origem/pendências.
 - [ ] Metas do caderno verificadas nos marcos aplicáveis; alterações dependem do tutor.
+
+## Evidências específicas do CP2
+
+- [ ] J1-J3 com UI/API/emuladores reais; checkout limpo e Compose sem ajustes manuais, persistência após recarga e caso de erro amigável.
+- [ ] Backend/TL documentam o teto concreto antes dos testes de fronteira; QA testa abaixo/no/acima, zero, negativo, unidade e mês, com resultados conferidos à mão.
+- [ ] QA publica /docs/rastreabilidade.md e /docs/relatorio-testes-v1.md em CarbonTrace, com totais executados/aprovados/reprovados/pulados, cobertura e BUG-xxx. Bugs em /docs/bugs/BUG-xxx.md, vinculados às issues responsáveis.
+- [ ] CI da aplicação executa lint/build/testes e bloqueia merge com falha; PR revisado por outra pessoa. Pipeline completo de produção/deploy pertence aos marcos posteriores.
+- [ ] PO registra revisões datadas S3/S4, confere a matriz, testa pessoalmente e escreve demo de 5 a 10 linhas incluindo erro.
+- [ ] DevOps produz prints da calculadora e do faturamento, com premissas/data; PO confere gasto acumulado até US$ 5. Excesso exige motivo/ações em /docs/finops e apresentação ao tutor.
+- [ ] J4/J5 e metas posteriores não impedem o aceite do núcleo; funcionalidade documentalmente descrita não equivale a funcionalidade entregue.
 
 ## N/A e aceite
 

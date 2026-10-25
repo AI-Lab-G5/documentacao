@@ -27,6 +27,8 @@ Alternativas descartadas:
 - **Sobrescrever a revisão corrente:** elimina a origem e não trata disputa entre edições.
 - **Hash obrigatório como identidade:** adiado porque o controle transacional e as referências atendem o recorte sem essa complexidade adicional.
 
+Repriorização de 25/10/2026: para o CP2, manter a prevenção simples de duplicatas por tenant/unidade/fonte/competência e preservar entradas/resultados originais. A janela de Idempotency-Key de 24h, reserva após cancelamento e transações de revisão-base abaixo são desenho para evolução posterior, a reavaliar quando implementados, não critérios extras de #11/#21. Retentar uma coleta não deve gerar dois consumos; isso não exige agora todo o mecanismo de operações.
+
 ## Consequências
 
 - **Fica mais fácil:** Repetir operações com segurança e explicar correções, sem definir manifesto ou IDs criptográficos.

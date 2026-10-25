@@ -27,6 +27,8 @@ Alternativas descartadas:
 - **Tela de publicação com perfil administrativo:** retirada porque a carga controlada pela equipe atende o piloto com menos interfaces/permissões.
 - **Hash/assinatura obrigatórios:** adiados para não confundir rastreabilidade com infraestrutura criptográfica e certificação.
 
+Aplicação no CP2 (25/10/2026): #21 entrega fatores versionados, cálculo/consulta e preservação do resultado A após disponibilizar B; #19 mostra essa origem e #24 a testa. Não é necessário implementar o snapshot completo da rede ou todos os cenários de correção/cancelamento nesta etapa. A carga é da equipe; nenhum fator preliminar passa a verificado por atualização documental.
+
 ## Consequências
 
 - **Fica mais fácil:** Explicar a origem matemática e distinguir mudança de consumo de mudança de fator, reproduzindo o resultado demonstrado.

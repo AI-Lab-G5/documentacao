@@ -2,7 +2,7 @@
 
 AI Lab Makers · Maker Foundation · G5
 
-Revisão editorial de 23/10/2026. Estrutura original preservada; conteúdo alinhado ao [ADR-008](adr/ADR-008-recorte-crud.md): CRUD de consumos com cinco jornadas, um perfil de funcionário e histórico mínimo. Este documento descreve o alvo planejado, não comprova implementação.
+Revisão editorial de 23/10/2026. Estrutura original preservada; conteúdo alinhado ao [ADR-008](adr/ADR-008-recorte-crud.md): CRUD de consumos com cinco jornadas, um perfil de funcionário e histórico mínimo. Este documento descreve o alvo planejado, não comprova implementação. Planejamento sincronizado em 25/10/2026: CP2 com J1-J3 e 10 issues ativas; J4/J5 e detalhes avançados nas fases posteriores.
 
 ## 1 CENÁRIO ATUAL DO CLIENTE E DO NEGÓCIO
 
@@ -68,7 +68,7 @@ As metas abaixo são critérios de validação previstos, não resultados alcan�
 
 | Dimensão | Meta | Marco previsto |
 | --- | --- | --- |
-| Reprodutibilidade | Diferença zero no recálculo com as mesmas entradas e versões, sem contagem fixa de execuções | Demo Day |
+| Reprodutibilidade | Diferença zero com as mesmas entradas e fator original; B não altera resultado salvo com A | Checkpoint 2 no núcleo J3; histórico de correções até o Demo Day |
 | Consistência | Soma exata das unidades igual ao total nos cenários de frações e revisões definidos | Etapa J4, semanas 5 a 8 |
 | Validação da coleta | Rejeitar entradas inválidas dos casos EP/BVA sem persistência, cobrindo cada critério | Checkpoint 2 |
 | Usabilidade | Cada um de 3 participantes registra 4 fontes em até 5 minutos | Checkpoint 3 |
@@ -79,7 +79,7 @@ As metas abaixo são critérios de validação previstos, não resultados alcan�
 | Autorização | Cobrir 100% das rotas protegidas e os testes de isolamento entre empresas; permitir as unidades da própria empresa | Checkpoint 2 |
 | Custo de nuvem | Acumulado até US$ 5 no CP2, US$ 12 no CP3 e US$ 50 no ciclo | Checkpoints 2 a 4 |
 
-Para desempenho, o backlog propõe 100 operações após 10 de aquecimento, com 100 unidades cadastradas e 1 usuário simultâneo, em ambiente identificado. O resultado desse teste não comprova capacidade para 300 unidades com acessos concorrentes.
+Para a avaliação posterior de desempenho, propõe-se um protocolo de 100 operações após 10 de aquecimento, com 100 unidades cadastradas e 1 usuário simultâneo, em ambiente identificado e a confirmar no plano de testes; não é requisito do CP2. O resultado desse teste não comprova capacidade para 300 unidades com acessos concorrentes.
 
 ### 2.2 Características da Solução
 
@@ -96,6 +96,8 @@ As cinco jornadas obrigatórias são:
 | Calcular emissões | Converter unidades permitidas, aplicar fatores versionados/metodologia fixa e preservar o snapshot | CT-M04, CT-M05 e CT-M09 |
 | Consolidar o dashboard | Totais por competência/unidade/escopo, pendências, ranking, mediana e alertas no snapshot selecionado | CT-M08 e CT-M12 |
 | Exportar PDF e CSV | Arquivos do mesmo snapshot com revisões, fatores, metodologia, autoria e datas, sem fechamento ou manifesto criptográfico | CT-M09 e CT-M10 |
+
+No CP2, o aceite de J1/J2 se concentra em cadastrar/consultar unidades, fontes e consumos com validação e persistência; J3 salva entrada, versão/valor do fator e resultado reproduzível. A tabela descreve as jornadas completas do MVP, não antecipa correção/cancelamento avançados, snapshots completos da rede, dashboard ou exportações para o checkpoint. Ver a [revisão datada e os responsáveis](backlog/revisao-2026-10-25-s3.md).
 
 **Versionamento, fechamento e auditoria**
 
@@ -146,7 +148,7 @@ As escolhas existentes são Python/FastAPI com decimal.Decimal, React/TypeScript
 
 O acesso é autorizado na API pelo tenant/papel do token; claims tenant_id e papel=funcionario. Firestore direto usa deny-all para clientes anônimos/autenticados. Admin SDK ignora Rules, portanto a API valida cada operação, inclusive histórico e relatórios. Funcionários acessam todas as unidades da própria empresa; testes devem permitir esse caso e negar outra empresa.
 
-Manter TLS em trânsito e criptografia gerenciada pelo provedor. Listas paginadas usam padrão 20/máximo 100; queries são filtradas/controladas e não há listener amplo sem justificativa. Totais/mediana usam o snapshot completo, nunca a soma de uma página da interface. Escritas têm Idempotency-Key com janela de 24 horas e controle de revisão-base, sem exigir hash criptográfico.
+Manter TLS em trânsito e criptografia gerenciada pelo provedor. Listas paginadas usam padrão 20/máximo 100; queries são filtradas/controladas e não há listener amplo sem justificativa. Totais/mediana usam o snapshot completo, nunca a soma de uma página da interface. No contrato-alvo completo, escritas têm Idempotency-Key com janela de 24 horas e controle de revisão-base, sem exigir hash criptográfico. Esses mecanismos avançados não bloqueiam o CP2: o núcleo evita duplicatas pela chave de negócio e preserva entrada/fator/resultado originais. TL/Backend registrarão o contrato mínimo efetivamente entregue.
 
 ### 2.4 Pesquisa de Mercado e Análise Competitiva
 
@@ -209,4 +211,4 @@ Para a controladoria, como interessada nos resultados, espera-se consultar pend�
 
 Para ESG e destinatários externos de relatórios, o benefício esperado é localizar a origem de um resultado, com meta exploratória de até sessenta segundos e três cliques, e reproduzir o cálculo com as mesmas versões. PDF/CSV derivados do mesmo snapshot permitem conferir revisões, fatores, metodologia, autoria e datas; não há manifesto, assinatura ou prova criptográfica de integridade. A qualidade ambiental continua dependendo dos dados e da adequação dos fatores escolhidos.
 
-A demonstração deverá mostrar correção/cancelamento preservando o snapshot anterior e recálculo com diferença zero usando as entradas e o fator original, mesmo após B. Também deverá mostrar ranking/mediana da própria rede e os limites dos alertas: ±50%, amostra insuficiente, mediana zero e pendências. PDF/CSV do mesmo snapshot completam J5 no Demo Day; sem registros, CSV tem cabeçalho e PDF explica ausência, sem inventar consumo zero. O projeto não promete redução de emissões, certificação, economia financeira ou conformidade jurídica comprovada apenas pela adoção da plataforma.
+Na demonstração final do MVP, a equipe deverá mostrar correção/cancelamento preservando o snapshot anterior e recálculo com diferença zero usando as entradas e o fator original, mesmo após B. Também deverá mostrar ranking/mediana da própria rede e os limites dos alertas: ±50%, amostra insuficiente, mediana zero e pendências. PDF/CSV do mesmo snapshot completam J5 no Demo Day; sem registros, CSV tem cabeçalho e PDF explica ausência, sem inventar consumo zero. A demo do CP2 é menor: login do funcionário, unidade/fonte, lançamento válido, cálculo com fator versionado, recarga e um erro amigável, sem exigir J4/J5. O projeto não promete redução de emissões, certificação, economia financeira ou conformidade jurídica comprovada apenas pela adoção da plataforma.
