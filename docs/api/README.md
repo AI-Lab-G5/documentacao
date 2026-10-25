@@ -3,6 +3,8 @@
 [OpenAPI](openapi.yaml) · [ADR-008](../adr/ADR-008-recorte-crud.md).
 **Especificação planejada, não API já implementada.** O repositório CarbonTrace mantém seu código e contrato gerado intactos nesta revisão. Seus endpoints atuais em português e autenticação precisam de adaptação conforme issues; não usar o lint deste arquivo como prova de integração.
 
+A priorização de 25/10 limita o gate a operações essenciais de J1-J3 e seus critérios no guia. O contrato completo continua como alvo do MVP: janela de idempotência de 24 horas, revisão-base, cancelamento e snapshots completos da rede não são requisitos adicionais do CP2. TL/Backend alinham e registram o contrato efetivamente entregue antes dos testes de contrato.
+
 ## Identidade e jornadas
 
 Prefixo /v1. Token Bearer verificado pela API, claims tenant_id e papel=funcionario. Tenant nunca é escolhido em path/query/body. /me expõe tenantId/role do chamador. Perfil único acessa todas as unidades da própria empresa; sem quatro papéis, aprovação ou fechamento.
@@ -50,7 +52,7 @@ Listas por cursor: padrão 20, máximo 100 e nextCursor. Totais/mediana usam tod
 
 Ranking somente de unidades ativas/completas com ≥1 fonte esperada. ≥3 unidades e mediana>0: abs((valor−mediana)/mediana×100)>50 alerta. Igual a 50 não alerta. Retornar status insufficient_sample/zero_median sem classificar. É alerta operacional absoluto, sem normalização por área.
 
-POST /reports recebe calculationId e format pdf/csv. Ambos usam o mesmo snapshot; retornam arquivo diretamente, sem Cloud Storage/job/downloadUrl obrigatório. Incluir revisões, fatores, metodologia, autores, datas e pendências; não exigir período fechado. J5 obrigatória até 05/12, fora das 20 issues do CP2.
+POST /reports recebe calculationId e format pdf/csv. Ambos usam o mesmo snapshot; retornam arquivo diretamente, sem Cloud Storage/job/downloadUrl obrigatório. Incluir revisões, fatores, metodologia, autores, datas e pendências; não exigir período fechado. J4/J5 continuam obrigatórias no MVP, nas semanas 5 a 8; o contrato completo não significa que essas jornadas sejam exigidas nas 10 issues ativas do CP2, que cobrem J1-J3.
 
 ## Erros e verificação
 

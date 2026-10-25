@@ -68,9 +68,9 @@ As metas abaixo são critérios de validação previstos, não resultados alcan�
 
 | Dimensão | Meta | Marco previsto |
 | --- | --- | --- |
-| Reprodutibilidade | Diferença zero em 100 recálculos com as mesmas entradas e versões | Demo Day |
-| Consistência | Soma exata das unidades igual ao total em 1.000 cenários de teste | Checkpoint 2 |
-| Validação da coleta | Sinalizar pelo menos 19 de 20 erros de unidade identificáveis na massa de teste | Checkpoint 2 |
+| Reprodutibilidade | Diferença zero no recálculo com as mesmas entradas e versões, sem contagem fixa de execuções | Demo Day |
+| Consistência | Soma exata das unidades igual ao total nos cenários de frações e revisões definidos | Etapa J4, semanas 5 a 8 |
+| Validação da coleta | Rejeitar entradas inválidas dos casos EP/BVA sem persistência, cobrindo cada critério | Checkpoint 2 |
 | Usabilidade | Cada um de 3 participantes registra 4 fontes em até 5 minutos | Checkpoint 3 |
 | Rastreabilidade | Consultar a origem de cada um de 10 resultados em até 60 segundos e 3 cliques | Demo Day |
 | Desempenho | p95 de leitura até 800 ms e de escrita até 1,5 s; cálculo de uma unidade com 4 fontes até 1,5 s no p95 | Checkpoint 4 |
@@ -174,12 +174,12 @@ A avaliação metodológica original propôs 10 casos de referência com tolerâ
 | Marco | Data em 2026 | Entrega prevista |
 | --- | --- | --- |
 | Checkpoint 1 | 18/10 | Visão, Ishikawa, backlog com aceite mensurável, 2 entrevistas ou evidências secundárias identificadas, hipótese de diferenciação, ADRs, OpenAPI v0.1, Definition of Done, ambiente local, CI com lint e build, dados de teste reproduzíveis, `.env.example`, alertas de orçamento, teste de isolamento escrito, ficha metodológica e fatores v1 |
-| Checkpoint 2 | 01/11 | J1-J4 locais, contrato-alvo 0.2.0, revisões/cancelamento, fatores A/B, dashboard/ranking/mediana, deny-all, segurança, EP/BVA, testes de contrato, matriz/relatório e custo acumulado até US$ 5 |
+| Checkpoint 2 | 01/11 | J1-J3 locais: unidades/fontes, lançamento validado e motor com fatores versionados; acessibilidade, deny-all, autorização, EP/BVA (zero, negativo, teto, unidade e mês), CI com testes e bloqueio de merge, matriz/relatório e prints de custos/calculadora até US$ 5 |
 | Checkpoint 3 | 15/11 | Implantação no Firebase Hosting e Cloud Run, verificações de disponibilidade, logs JSON, Workload Identity Federation e custo acumulado até US$ 12 |
 | Checkpoint 4 | 29/11 | Verificações de CI que bloqueiem entregas reprovadas, cobertura e Lighthouse nas metas, reversão de implantação ensaiada e relatório de custos |
 | Demo Day | 05/12 | Homologação das cinco jornadas obrigatórias e apresentação das evidências |
 
-Should e Could só devem ser assumidos após avaliar a capacidade restante. Ranking/mediana e recálculo com fator original são obrigatórios (CT-M12/CT-M05), sem depender de CT-S02. Sprint 2 (19 a 25/10) prepara J1/J2 e base do cálculo; Sprint 3 (26/10 a 01/11) entrega J3/J4 e evidências do CP2. J5 PDF/CSV continua Must até 05/12, com planejamento posterior explícito e fora das 20 issues do CP2. O tutor deve ser informado da revisão; critérios técnicos dos gates permanecem.
+Should e Could só devem ser assumidos após avaliar a capacidade restante. Ranking/mediana e recálculo com fator original são obrigatórios (CT-M12/CT-M05), sem depender de CT-S02. Sprint 2 (19 a 25/10) prepara J1/J2 e base do cálculo; Sprint 3 (26/10 a 01/11) entrega J3 e evidências de J1-J3. A revisão de 25/10 consolida 10 issues ativas, uma por integrante por sprint. J4 e J5 continuam Must do MVP, planejadas para as semanas 5 a 8 antes do Demo Day, sem bloquear o CP2. Correção/cancelamento avançados, reserva de chave e janela de idempotência de 24 horas são detalhes de evolução, não exigências deste gate. O tutor deve ser informado da revisão; critérios técnicos dos gates permanecem.
 
 **Viabilidade financeira**
 
@@ -195,7 +195,7 @@ A viabilidade comercial depende de confirmar a frequência do problema e o inter
 | --- | --- |
 | Problema pouco frequente ou sem orçamento para solução | Validar processo, esforço e decisão de compra em entrevistas |
 | Fator inadequado, desatualizado ou sem permissão de uso | Registrar fonte, publicação e vigência; revisar conteúdo e condições de uso antes da publicação |
-| Divergência de cálculo ou consolidação | Usar decimal, conversões explícitas, casos de referência e 1.000 cenários de consistência |
+| Divergência de cálculo ou consolidação | Usar decimal, conversões explícitas, casos de referência e cenários determinísticos de consistência |
 | Perda de histórico em correções | Preservar revisões e testar consultas/recálculos de snapshots anteriores |
 | Acesso indevido entre clientes | Testar isolamento entre empresas na API e deny-all no Firestore; permitir unidades do mesmo cliente |
 | Prazo ou orçamento excedido | Priorizar Must, revisar MoSCoW semanalmente e acompanhar limites de custo |
@@ -209,4 +209,4 @@ Para a controladoria, como interessada nos resultados, espera-se consultar pend�
 
 Para ESG e destinatários externos de relatórios, o benefício esperado é localizar a origem de um resultado, com meta exploratória de até sessenta segundos e três cliques, e reproduzir o cálculo com as mesmas versões. PDF/CSV derivados do mesmo snapshot permitem conferir revisões, fatores, metodologia, autoria e datas; não há manifesto, assinatura ou prova criptográfica de integridade. A qualidade ambiental continua dependendo dos dados e da adequação dos fatores escolhidos.
 
-A demonstração deverá mostrar correção/cancelamento preservando o snapshot anterior e cem recálculos com diferença zero usando as entradas e o fator original, mesmo após B. Também deverá mostrar ranking/mediana da própria rede e os limites dos alertas: ±50%, amostra insuficiente, mediana zero e pendências. PDF/CSV do mesmo snapshot completam J5 no Demo Day; sem registros, CSV tem cabeçalho e PDF explica ausência, sem inventar consumo zero. O projeto não promete redução de emissões, certificação, economia financeira ou conformidade jurídica comprovada apenas pela adoção da plataforma.
+A demonstração deverá mostrar correção/cancelamento preservando o snapshot anterior e recálculo com diferença zero usando as entradas e o fator original, mesmo após B. Também deverá mostrar ranking/mediana da própria rede e os limites dos alertas: ±50%, amostra insuficiente, mediana zero e pendências. PDF/CSV do mesmo snapshot completam J5 no Demo Day; sem registros, CSV tem cabeçalho e PDF explica ausência, sem inventar consumo zero. O projeto não promete redução de emissões, certificação, economia financeira ou conformidade jurídica comprovada apenas pela adoção da plataforma.

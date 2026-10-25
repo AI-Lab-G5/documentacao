@@ -27,11 +27,11 @@ Fora do MVP: aprovação segregada, fechamento/reabertura, quatro perfis, audito
 
 | Marco | Entrega planejada |
 | --- | --- |
-| [Sprint 2: 19 a 25/10](https://github.com/AI-Lab-G5/CarbonTrace/milestone/2) | J1/J2 integradas e base do cálculo; issues #5-#14 |
-| [Sprint 3: 26/10 a 01/11](https://github.com/AI-Lab-G5/CarbonTrace/milestone/3) | J3/J4, correção/cancelamento e evidências do CP2; issues #15-#24 |
+| [Sprint 2: 19 a 25/10](https://github.com/AI-Lab-G5/CarbonTrace/milestone/2) | J1/J2 e base local; 5 issues: #5, #7, #9, #11 e #13 |
+| [Sprint 3: 26/10 a 01/11](https://github.com/AI-Lab-G5/CarbonTrace/milestone/3) | J3 e aceite de J1-J3; 5 issues: #15, #18, #19, #21 e #24 |
 | Demo Day: 05/12/2026 | Cinco jornadas homologadas, incluindo J5 PDF/CSV |
 
-J5 é obrigatória no MVP, mas não foi adicionada às 20 issues do CP2. Publicar documentos não encerra implementação nem aprova gate. Informar o tutor sobre a revisão; exigências técnicas do caderno permanecem.
+Repriorização de 25/10/2026 conforme o Guia para os POs: o CP2 cobre especificamente J1-J3, em 10 issues ativas (uma por integrante em cada sprint). J4/J5 continuam no MVP para as semanas 5 a 8; não bloqueiam este gate. Issues substituídas são encerradas como consolidadas/adiadas e retiradas das milestones, sem contar como entrega. Publicar documentos não encerra implementação nem aprova gate. Informar o tutor sobre a revisão; exigências técnicas do caderno permanecem.
 
 GCP + Firebase continuam como base. US$ 3-8 é estimativa, não gasto medido nem garantia. Limites acumulados: CP2 US$ 5; CP3 US$ 12; ciclo US$ 50. A US$ 40, revisar/desligar recursos não críticos. Registrar gasto real, data e evidência.
 

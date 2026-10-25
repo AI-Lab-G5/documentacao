@@ -46,7 +46,9 @@ O Ishikawa permanece contexto, sem obrigar tratar todas as causas. A visão de p
 
 ## Entregas e verificação
 
-Sprint 2 (19 a 25/10): J1/J2 e base do cálculo. Sprint 3 (26/10 a 01/11): J3/J4, revisão/cancelamento e CP2. J5 é Must até 05/12, fora das 20 issues atuais. Responsáveis, estados e milestones preservados; sem encerramento automático por documentação.
+Repriorização aprovada em 25/10/2026 conforme o Guia para os POs: Sprint 2 (19 a 25/10), J1/J2 e base local; Sprint 3 (26/10 a 01/11), J3 e provas/aceite de J1-J3. São 10 issues ativas, 5 por sprint e uma por integrante. J4/J5 continuam Must do MVP para as semanas 5 a 8; não são dependências do CP2. As antigas issues são encerradas administrativamente como consolidadas/adiadas, retiradas das milestones e ligadas às substitutas, sem representar implementação concluída. Datas, responsáveis das ativas e Sprint 1 são preservados.
+
+EP/BVA e matriz pertencem ao QA; PO registra refinamentos S3/S4 e confere aceite/evidências. Backend implementa domínio/tokens, TL coordena/revisa e DevOps configura ambiente/CI e produz prints de custos/calculadora. Cada critério entregue tem teste; 100 recálculos, 1.000 agregações e 19/20 erros deixam de ser contagens obrigatórias. Revisão concorrente, cancelamento com chave reservada e janela de 24 horas ficam para evolução quando necessários, sem excluir os objetivos do MVP. Esta é repriorização de entrega, não retorno aos quatro perfis ou remoção das cinco jornadas.
 
 [OpenAPI 0.2.0](../api/openapi.yaml) é contrato-alvo, distinto do código/contrato gerado atual de CarbonTrace. Esta revisão modifica documentacao, não implementa aquele produto.
 

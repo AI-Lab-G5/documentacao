@@ -15,11 +15,11 @@ O escopo menor retira a matriz de quatro perfis e o fluxo de aprovação/fechame
 
 Manter três pilares, complementados por smoke de interface:
 
-1. **Unitários e de propriedade:** testar Decimal, conversão kWh/MWh, validações, idempotência e agregações; geração com semente, por Hypothesis ou massa determinística equivalente, para 1.000 cenários incluindo revisões/cancelamentos.
+1. **Unitários e de propriedade:** testar Decimal, conversão kWh/MWh, validações, idempotência e agregações; geração com semente, por Hypothesis ou massa determinística equivalente, para cenários definidos incluindo revisões/cancelamentos, sem contagem fixa como gate.
 2. **Contrato:** verificar schemas, campos, erros e rotas implementadas contra a OpenAPI-alvo 0.2.0. Lint do documento não prova compatibilidade da aplicação.
-3. **Golden tests e integração:** emuladores Auth/Firestore, fatores sintéticos A/B, entradas/revisões conhecidas e 100 recálculos do snapshot original com diferença zero.
+3. **Golden tests e integração:** emuladores Auth/Firestore, fatores sintéticos A/B, entradas/revisões conhecidas e recálculo do original com diferença zero.
 
-Smoke E2E confirma J1-J4 locais no CP2, incluindo carregando/vazio/erro/sucesso. J5 adiciona concordância PDF/CSV do mesmo snapshot até o Demo Day, sem ser declarada executada nas 20 issues atuais.
+Smoke E2E confirma J1-J3 locais no CP2, incluindo estados, teclado/rótulos/status além da cor, persistência após recarga e erro amigável. J4/J5 pertencem às semanas 5 a 8; não bloqueiam as 10 issues ativas. QA monta a suíte, /docs/rastreabilidade.md e primeiro relatório com total/aprovados/cobertura/BUG-xxx; PO confere. Cada critério entregue requer teste, e cada rota protegida os quatro casos de autorização; não há número mínimo arbitrário de testes.
 
 EP/BVA inclui zero/ausente/negativo, unidade incompatível, duplicidade, base concorrente e limites de paginação. Cobrir mediana, ±50% exatos, >50%, zero/amostra insuficiente e incompletas. Segurança cobre todas as rotas: token ausente/inválido/expirado, papel sem permissão, tenant incorreto, acesso indevido e Firestore direto deny-all. Acesso entre unidades do mesmo tenant é permitido e deve ter caso positivo.
 

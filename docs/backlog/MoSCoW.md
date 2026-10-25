@@ -1,7 +1,7 @@
 # Backlog MoSCoW: CarbonTrace
 
 23/10/2026 · [Visão](../visao-de-produto.md) · [ADR-008](../adr/ADR-008-recorte-crud.md).
-Critérios são planejados, não resultados. Perfil único funcionario, acesso às unidades do próprio tenant. Must compreende J1-J5 até 05/12; as 20 issues CP2 cobrem J1-J4.
+Critérios são planejados, não resultados. Perfil único funcionario, acesso às unidades do próprio tenant. Must compreende J1-J5 até 05/12; as 10 issues ativas do CP2 cobrem J1-J3. O recorte de 25/10 segue o Guia para os POs: cada critério entregue tem teste, sem contagem arbitrária de casos. J4/J5 e detalhes avançados de correção/cancelamento pertencem às fases posteriores.
 
 Consultar a [matriz planejada de rastreabilidade](rastreabilidade.md); atualizar com testes/PR/CI reais durante a implementação.
 
@@ -59,7 +59,7 @@ Como funcionário, quero preencher fonte, competência, quantidade e unidade.
 1. YYYY-MM válido, fonte ativa, quantidade decimal finita ≥0; eletricidade kWh/MWh, diesel/gasolina L, GLP kg. Ausência não vira zero; inválido →422 e zero gravação.
 2. Guardar empresa, unidade, fonte, competência, quantidade/unidade originais, UID, instante e revisão 1. Um lançamento lógico por unidade/fonte/competência; nova entrada duplicada →409, inclusive após cancelamento.
 3. Mesma Idempotency-Key/payload retorna o recurso anterior, sem nova revisão/evento. Chave reutilizada com outro payload →409, janela 24h. Sem hash criptográfico obrigatório.
-4. Massa de 20 erros de unidade identificáveis: sinalizar ≥19 antes da gravação. Não presumir detectar quantidade errada com unidade válida. Meta de usabilidade posterior: cada um de 3 participantes registra 4 fontes em ≤5 minutos.
+4. Cobrir as partições e fronteiras de zero, negativo, teto concreto, unidade e mês, rejeitando todos os casos inválidos sem gravação. Não presumir detectar quantidade errada com unidade válida. Meta de usabilidade posterior: cada um de 3 participantes registra 4 fontes em ≤5 minutos.
 
 ### CT-M04: Fatores imutáveis (J3)
 
@@ -76,7 +76,7 @@ Como funcionário, quero calcular e conferir um resultado anterior.
 
 1. Fator sintético 0,5 kgCO2e/kWh: 1 MWh e 1.000 kWh retornam exatamente 500 kgCO2e. Outras fontes usam suas unidades fixas; incompatíveis rejeitados.
 2. Salvar snapshot imutável com entradas/revisões, configuração de fontes esperadas, conversões, fatores/versões, metodologia, UID, datas e resultados.
-3. Recalcular o mesmo snapshot 100 vezes, após B ou correção, produz diferença zero com entradas/fatores originais. Referências explícitas bastam, sem hash.
+3. Recalcular o mesmo resultado após B ou correção produz diferença zero com entradas/fatores originais, sem quantidade fixa de repetições. Referências explícitas bastam, sem hash.
 4. Decimal no domínio, strings em JSON/banco, soma exata e apresentação em 3 casas ROUND_HALF_EVEN. Não arredondar intermediários.
 5. Estimativa reduzida não equivale a inventário completo homologado. Casos sintéticos comprovam comportamento; referências ambientais oficiais exigem conferência específica.
 
@@ -95,7 +95,7 @@ Como funcionário, quero acompanhar a rede por mês, unidade e escopo.
 
 1. Somar uma única revisão corrente válida/não cancelada por lançamento. Dados parciais são rotulados; pendências identificam unidade/fonte, sem converter ausência em zero.
 2. Snapshot selecionado usa apenas seu conjunto salvo; nova execução não altera anteriores.
-3. Em 1.000 cenários com semente registrada, incluindo frações, revisões e cancelamentos, soma exata das unidades = total. Mostrar diferença de arredondamento quando houver.
+3. Nos cenários com semente registrada definidos para frações, revisões e cancelamentos, soma exata das unidades = total. Mostrar diferença de arredondamento quando houver.
 4. Linhas paginadas 20/100; total e mediana usam todo o snapshot autorizado, não só a página. Queries filtradas/limitadas; sem listener amplo sem justificativa.
 
 ### CT-M09: Origem do resultado (J3/J5)
@@ -113,7 +113,7 @@ Como funcionário, quero baixar o mesmo recorte em dois formatos.
 1. Ambos recebem calculationId salvo; identificam empresa, competência, snapshot, unidade/fonte, entradas/revisões, conversões, fatores, metodologia, UID e datas.
 2. Após correção/cancelamento/B, reexportação do snapshot A preserva dados; data de geração do arquivo pode mudar.
 3. Síncrono, sem fechamento, aprovação, jobs ou Storage obrigatório. Indicar pendências e preliminaridade; PDF não certifica. Vazio: CSV com cabeçalho e PDF explicativo.
-4. Must até 05/12/2026; implementação não faz parte das 20 issues do CP2. Planejamento posterior deve ser explicitado.
+4. Must até 05/12/2026; implementação não faz parte das 10 issues ativas do CP2. Planejamento posterior deve ser explicitado.
 
 ### CT-M11: Cancelamento lógico (novo, J2)
 
@@ -134,7 +134,7 @@ Como funcionário, quero comparar totais da minha empresa.
 
 ## Should, Could e exclusões
 
-CT-S03 (Should): plausibilidade/qualidade automática além da validação obrigatória, somente após Must. CT-S04 (Could): importar unidades por CSV após Must e avaliação de capacidade. Não integram as 20 issues.
+CT-S03 (Should): plausibilidade/qualidade automática além da validação obrigatória, somente após Must. CT-S04 (Could): importar unidades por CSV após Must e avaliação de capacidade. Não integram as 10 issues ativas.
 
 Adiadas: CT-M06 fechamento/aprovação/reabertura; CT-S01 ponte; CT-S02 intensidade/MAD; CT-C01 auditor; CT-C02 abordagem/vínculo; CT-C03 escolha GWP.
 
@@ -144,8 +144,8 @@ Critérios negativos: contrato/catálogo não oferecem esses recursos; fonte nã
 
 ## Marcos, qualidade e dependências
 
-CP2: 3-5 jornadas locais (planejadas J1-J4), OpenAPI atualizada, quatro estados UI, deny-all, testes sem token/inválido/expirado/papel sem permissão/tenant incorreto/acesso indevido, EP/BVA, contrato/prioridades, matriz e primeiro relatório em /docs; custo ≤US$5, paginação e queries controladas. Não contar teste pulado como aprovado.
+CP2 conforme guia específico de Pegada Rede: J1-J3 locais (cadastro de unidades/fontes, coleta validada e motor com fatores versionados), telas com estados e acessibilidade, deny-all, quatro testes de autorização por rota, EP/BVA com zero/negativo/teto/unidade/mês, CI com testes reais e bloqueio de merge, matriz em /docs/rastreabilidade.md e primeiro relatório com totais/cobertura/BUG-xxx em /docs. DevOps produz prints da calculadora/faturamento e PO confere custo ≤US$5. Não contar teste pulado como aprovado. Teto concreto é definido no contrato por TL/Backend com aceite de negócio antes da BVA.
 
 Exigências posteriores do caderno permanecem: publicação/operação e custo ≤US$12 no CP3; cobertura ≥80% domínio/≥60% global, Lighthouse ≥90, p95 leitura ≤800ms/escrita ≤1,5s, segurança, rollback e gates no CP4. Alterações dependem do tutor.
 
-Dependências: J1→J2→J3→J4; correção/cancelamento produz novo resultado corrente. J5 depende de snapshots/origem J3/CT-M09, não de CT-M06. Cada conclusão exige aceite/teste/PR/CI/documentação reais. As milestones preservam 10 issues por semana e duas por integrante.
+Dependências: J1→J2→J3→J4; correção/cancelamento produz novo resultado corrente. J5 depende de snapshots/origem J3/CT-M09, não de CT-M06. Cada conclusão exige aceite/teste/PR/CI/documentação reais. As milestones preservam 5 issues ativas por semana e uma por integrante (10 no total). QA monta suíte/matriz/relatório; PO refina e confere. Revisões de backlog S3 e S4 registram data, prioridade e motivo. Correção concorrente, cancelamento sem reativação, snapshots completos da rede, chave de 24h e detalhes de CT-M07 a CT-M12 não bloqueiam o aceite mínimo de J1-J3; a implementação básica preserva dados e versão/valor de fator sem apagar história existente.

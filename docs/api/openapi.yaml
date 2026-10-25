@@ -5,7 +5,7 @@ info:
   description: Comportamento planejado conforme ADR-008 (23/10/2026), não comprovação de implementação. Um perfil
     funcionario acessa todas as unidades do próprio tenant. Claims tenant_id/papel, sem tenant selecionável pelo
     cliente. Decimal em strings; sem quatro perfis, aprovação, fechamento, publicação de fatores pela API ou hashes
-    obrigatórios. J1-J4 no CP2, J5 obrigatória no MVP posterior.
+    obrigatórios. J1-J3 no CP2; J4/J5 obrigatórias no MVP posterior.
 servers:
 - url: /v1
   description: Prefixo do contrato-alvo, distinto das rotas implementadas atuais.
@@ -1083,7 +1083,7 @@ paths:
       - J5
       operationId: generateReport
       summary: Gerar PDF ou CSV síncrono do snapshot
-      description: Must do MVP até 05/12, fora das 20 issues CP2. Ambos usam mesmo calculationId imutável e incluem
+      description: Must do MVP até 05/12, fora das 10 issues ativas CP2. Ambos usam mesmo calculationId imutável e incluem
         referências/revisões, fatores, metodologia, UID/datas e pendências/preliminaridade. Sem aprovação, fechamento,
         job, Storage obrigatório ou manifesto. CSV vazio contém cabeçalho; PDF vazio explica ausência de registros.
       responses:

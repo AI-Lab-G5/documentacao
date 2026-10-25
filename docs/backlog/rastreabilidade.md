@@ -1,24 +1,21 @@
 # Matriz de rastreabilidade planejada
 
-23/10/2026 · [Backlog](MoSCoW.md) · [ADR-008](../adr/ADR-008-recorte-crud.md).
+Repriorização de 25/10/2026 conforme o Guia para os POs. [Backlog](MoSCoW.md) · [ADR-008](../adr/ADR-008-recorte-crud.md).
 
-Esta matriz liga o alvo de produto ao planejamento. **Todos os resultados estão pendentes** nesta revisão documental. IDs de casos abaixo são planejados; não são nomes de testes já existentes. Durante a implementação, adicionar caminho do teste, resultado observado, versão, PR e CI reais.
+Este arquivo é um índice de planejamento do produto, não prova de execução. A matriz de aceite exigida no CP2 será montada pelo QA em **/docs/rastreabilidade.md no repositório CarbonTrace**, com uma ligação verificável para cada critério individual: requisito -> critério -> CT-xx/teste -> resultado -> versão/PR/CI. O PO confere, não substitui o QA na elaboração técnica.
 
-Issues são de [AI-Lab-G5/CarbonTrace](https://github.com/AI-Lab-G5/CarbonTrace/issues), não deste repositório. J1-J4 no CP2; J5 obrigatória no MVP posterior.
+São 10 issues ativas, uma por integrante em cada sprint. Todas as evidências abaixo continuam pendentes até a implementação e execução reais.
 
-| Requisito / aceite | Caso planejado | Issues CP2 | Resultado / PR / CI |
+| Área / requisito CP2 | Implementação / evidência | Issues ativas | Resultado |
 | --- | --- | --- | --- |
-| CT-M01.1-4: unidade/fonte, código, desativação e paginação | T01 cadastro/duplicidade/catálogo/limites | #7, #9, #11, #14 | Pendente |
-| CT-M02.1-4: token, papel único, tenant e deny-all | T02 matriz de autorização de todas as rotas | #7, #13, #17, #23 | Pendente |
-| CT-M03.1-4: validação, idempotência e erros de unidade | T03 zero/ausente/negativo/unidade/reenvio; EP/BVA | #6, #10, #12, #14, #24 | Pendente |
-| CT-M04.1-4: fatores A/B e compatibilidade | T04 imutabilidade/vigência/preliminar | #8, #21, #24 | Pendente |
-| CT-M05.1-5: conversão, precisão e reprodução | D01/D03, 100 recálculos, empate HALF_EVEN | #8, #19, #21, #24 | Pendente |
-| CT-M07.1-4: revisão sem aprovação | D04 correção, base concorrente e retry | #12, #19, #21, #24 | Pendente |
-| CT-M08.1-4: totais correntes/snapshot e paginação | D05 + 1.000 cenários com semente | #20, #22, #24 | Pendente |
-| CT-M09.1-3: origem de cinco resultados | T09 detalhe/revisão/fator/autor/datas | #19, #21, #24 | Pendente |
-| CT-M10.1-4: PDF/CSV do mesmo snapshot | D07 exportação A depois de B/correção | Planejamento posterior obrigatório, fora das 20 issues | Pendente, não implementado |
-| CT-M11.1-3: cancelamento sem apagamento | D04 cancelamento/total/histórico/retry | #12, #19, #22, #24 | Pendente |
-| CT-M12.1-4: ranking/mediana e >50% | D06, ±50%, zero, <3 e incompletas | #20, #22, #24 | Pendente |
-| CP2: execução local, contrato, EP/BVA, relatório e custos | T13 checkout limpo; relatório/custos comprovados | #5, #6, #13, #14, #15, #16, #18, #23, #24 | Pendente |
+| J1 cadastro de unidades e fontes | API/UI reais, validações e persistência | #7, #9, #11, #24 | Pendente |
+| J2 lançamento mensal validado | Zero, negativo, teto, unidade, mês, tipos e formatos | #7, #9, #11, #24 | Pendente |
+| J3 motor com fatores versionados | Decimal, exemplo à mão, versão/valor de fator e consulta do resultado | #7, #18, #19, #21, #24 | Pendente |
+| Login/tenant/papel e deny-all | Backend implementa; QA testa quatro negações por rota e acesso direto | #11, #13, #18, #21, #24 | Pendente |
+| Interface acessível e estados | Teclado, rótulos, status além da cor, erro/vazio/carregando e recarga | #9, #19, #24 | Pendente |
+| Ambiente e CI | Compose/seed reproduzíveis; lint/build/testes e bloqueio de merge | #7, #13, #18 | Pendente |
+| EP/BVA, matriz e relatório | Cada critério com caso executável/resultado; total, cobertura e BUG-xxx | #13, #24; PO confere #15 | Pendente |
+| Refinamento e aceite do PO | Revisões S3/S4, critérios numerados e demo de 5 a 10 linhas | #5, #15 | Pendente |
+| FinOps | DevOps produz calculadora/prints do faturamento; PO confere <= US$ 5 | #13, #24; PO confere #5/#15 | Pendente |
 
-CT-M06 e demais funcionalidades adiadas não serão marcadas como aceitas por ausência de implementação. Metas dos checkpoints posteriores permanecem no caderno; planejar suas evidências nos marcos correspondentes.
+J4/J5, métricas avançadas de agregação/mediana, PDF/CSV e detalhes de revisão/cancelamento continuam no MVP para as semanas 5 a 8, sem dependência no gate CP2. As issues substituídas ficam fechadas como consolidadas/adiadas, não como implementação entregue. Bug Reports podem ser arquivos /docs/bugs/BUG-xxx.md, vinculados ao relatório e à issue responsável, preservando no máximo 10 issues ativas.
