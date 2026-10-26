@@ -5,7 +5,19 @@ Critérios são planejados, não resultados. Perfil único funcionario, acesso �
 
 Consultar o [índice planejado de rastreabilidade](rastreabilidade.md) e a [revisão datada da S3](revisao-2026-10-25-s3.md). QA produzirá a matriz executada em /docs/rastreabilidade.md de CarbonTrace; este backlog não declara testes executados.
 
-O prefixo Must se refere ao produto completo. Para o CP2, o recorte é: CT-M01 no cadastro/consulta/fontes e validações; CT-M02 no login e isolamento; CT-M03 nos critérios 1, 2 (entrada original/autoria e prevenção de duplicatas) e 4 (validação; usabilidade posterior); CT-M04 no versionamento/consulta; CT-M05 em conversão, Decimal, resultado salvo e reprodução com fator original; CT-M09 na origem básica desse resultado. Edição/desativação avançada, reserva da chave após cancelamento, CT-M03.3 (janela de 24h), CT-M05.2 (snapshot completo da rede), cenários após correção/cancelamento e a meta ampliada de CT-M09.2 ficam para depois. CT-M07/08/10/11/12 não são gate deste checkpoint.
+## Recorte de aceite do CP2 — 01/11/2026
+
+Referência: [CarbonTrace #5, CA-01 a CA-03](https://github.com/AI-Lab-G5/CarbonTrace/issues/5). O prefixo Must se refere ao produto completo; CT-M01 a CT-M05 continuam Must. A tabela delimita os critérios numerados abaixo que precisam funcionar localmente no CP2.
+
+| História Must | Critérios aplicáveis ao CP2 | Continuidade posterior no MVP | Issues de CarbonTrace |
+| --- | --- | --- | --- |
+| CT-M01 — J1 | 1 no cadastro/consulta e duplicidade; 2 no vínculo ao catálogo aprovado; 3 em listas/estados; 4 preserva a regra de não coletar em unidade/fonte inativa quando esse estado existir | Edição e desativação avançadas | [#9](https://github.com/AI-Lab-G5/CarbonTrace/issues/9), [#11](https://github.com/AI-Lab-G5/CarbonTrace/issues/11) |
+| CT-M02 — login e isolamento | 1 a 4: conta individual funcionario, token/empresa/papel, acesso às unidades do próprio tenant e deny-all direto | Sem ampliar para quatro perfis ou gestão de usuários | [#11](https://github.com/AI-Lab-G5/CarbonTrace/issues/11), [#13](https://github.com/AI-Lab-G5/CarbonTrace/issues/13), [#24](https://github.com/AI-Lab-G5/CarbonTrace/issues/24) |
+| CT-M03 — J2 | 1; 2 na entrada original/autoria e prevenção de duplicatas; 4 na validação | Reserva de chave após cancelamento; 3, janela de 24h; meta de usabilidade de 4 | [#7](https://github.com/AI-Lab-G5/CarbonTrace/issues/7), [#9](https://github.com/AI-Lab-G5/CarbonTrace/issues/9), [#11](https://github.com/AI-Lab-G5/CarbonTrace/issues/11) |
+| CT-M04 — J3 | 1 a 4 no preparo, seleção e consulta de fatores versionados, com preliminaridade identificada | Identificação em relatório quando J5 for entregue; sem publicação de fatores pela aplicação | [#21](https://github.com/AI-Lab-G5/CarbonTrace/issues/21), [#19](https://github.com/AI-Lab-G5/CarbonTrace/issues/19) |
+| CT-M05 — J3 | 1; 3 após disponibilizar B, usando entradas/fator originais; 4 a 6 | 2, snapshot completo da rede; cenário de 3 após correção/cancelamento | [#21](https://github.com/AI-Lab-G5/CarbonTrace/issues/21), [#19](https://github.com/AI-Lab-G5/CarbonTrace/issues/19) |
+
+CT-M09 integra o CP2 somente na origem básica do resultado salvo; sua meta ampliada de 5 resultados e cenários após correção/cancelamento fica para depois. CT-M07/08/10/11/12, J4/J5, deploy, revisão/cancelamento avançados e infraestrutura de auditoria não bloqueiam J1-J3. Permanecem os compromissos posteriores do MVP quando aplicáveis, sem apagar funcionalidades ou histórico existentes.
 
 O aceite do recorte não encerra silenciosamente critérios restantes da história completa: registrar cada critério entregue/testado e manter os demais pendentes no backlog. As issues #5 e #15 verificam as histórias Must do CP2, distinguindo-as do restante do MVP.
 
@@ -60,10 +72,12 @@ Como funcionário, quero acessar as unidades da minha empresa com conta individu
 
 Como funcionário, quero preencher fonte, competência, quantidade e unidade.
 
-1. YYYY-MM válido, fonte ativa, quantidade decimal finita ≥0 e até o teto documentado por fonte/unidade no contrato mínimo; eletricidade kWh/MWh, diesel/gasolina L, GLP kg. Ausência não vira zero; inválido →422 e zero gravação.
+1. Competência YYYY-MM com mês de 01 a 12: 2026-10 é válido; 2026-00, 2026-13 e 2026-1 são inválidos. Fonte ativa, quantidade decimal finita ≥0 e até o teto documentado por fonte/unidade no contrato mínimo; eletricidade kWh/MWh, diesel/gasolina L, GLP kg. Zero explícito é aceito; negativo, ausência, não finito, unidade incompatível ou competência inválida →422 e zero gravação. Ausência não vira zero.
 2. Guardar empresa, unidade, fonte, competência, quantidade/unidade originais, UID, instante e revisão 1. Um lançamento lógico por unidade/fonte/competência; nova entrada duplicada →409, inclusive após cancelamento.
 3. Mesma Idempotency-Key/payload retorna o recurso anterior, sem nova revisão/evento. Chave reutilizada com outro payload →409, janela 24h. Sem hash criptográfico obrigatório.
-4. Cobrir as partições e fronteiras de zero, negativo, teto concreto, unidade e mês, rejeitando todos os casos inválidos sem gravação. Não presumir detectar quantidade errada com unidade válida. Meta de usabilidade posterior: cada um de 3 participantes registra 4 fontes em ≤5 minutos.
+4. QA elabora e executa as partições e fronteiras de zero, negativo, teto concreto, unidade e mês, verificando rejeição dos inválidos sem gravação; PO confere os exemplos de negócio e a cobertura por critério. Não presumir detectar quantidade errada com unidade válida. Meta de usabilidade posterior: cada um de 3 participantes registra 4 fontes em ≤5 minutos.
+
+O teto numérico e sua justificativa por fonte/unidade ainda dependem de confirmação de TL/Backend em [#7, CA-02](https://github.com/AI-Lab-G5/CarbonTrace/issues/7) e [#11, CA-03](https://github.com/AI-Lab-G5/CarbonTrace/issues/11). Conferir também as regras acima com os responsáveis antes da BVA de [#24](https://github.com/AI-Lab-G5/CarbonTrace/issues/24). Não adotar limite ambiental presumido nem faixa de datas adicional sem decisão registrada.
 
 ### CT-M04: Fatores imutáveis (J3)
 
@@ -72,7 +86,7 @@ Como funcionário, quero saber o fator utilizado sem administrá-lo na aplicaç�
 1. Equipe prepara A/B com ID, vigência YYYY-MM, fonte, valor decimal/unidade, escopo, referência e status preliminary/verified. Metodologia fixa identifica as premissas ambientais.
 2. Aplicação apenas consulta fatores; sem publicação/edição/exclusão de versão. Corrigir fator cria outra versão. B não altera cálculo salvo com A.
 3. Novo cálculo escolhe versão compatível mais recente vigente na competência; sem compatibilidade →422 e nenhum resultado válido. Procedimento de carga rejeita conjunto sem campos obrigatórios.
-4. Identificar dados sintéticos/preliminares na consulta e no relatório. Referência e condições de uso devem ser conferidas antes de alegar validação.
+4. Identificar dados sintéticos/preliminares na consulta e, quando J5 for entregue, no relatório. Referência e condições de uso devem ser conferidas antes de alegar validação.
 
 ### CT-M05: Cálculo e reprodução (J3)
 
@@ -83,6 +97,7 @@ Como funcionário, quero calcular e conferir um resultado anterior.
 3. Recalcular o mesmo resultado após B ou correção produz diferença zero com entradas/fatores originais, sem quantidade fixa de repetições. Referências explícitas bastam, sem hash.
 4. Decimal no domínio, strings em JSON/banco, soma exata e apresentação em 3 casas ROUND_HALF_EVEN. Não arredondar intermediários.
 5. Estimativa reduzida não equivale a inventário completo homologado. Casos sintéticos comprovam comportamento; referências ambientais oficiais exigem conferência específica.
+6. No CP2, salvar e consultar a entrada original, quantidade/unidade, conversão aplicada, autoria/data, resultado e valor/versão do fator usado. Disponibilizar B não altera esses dados do cálculo com A. Esse registro mínimo não exige o snapshot completo da rede do critério 2.
 
 ### CT-M07: Correção retroativa (J2/J3)
 
